@@ -83,3 +83,45 @@ CREATE TABLE Candidato_Habilidad (
     PRIMARY KEY (ID_Candidato, ID_Habilidad)
 );
 
+------------------------------------------------------------------------------------------------------
+--Creacion de los roles 
+CREATE ROLE CANDIDATO;
+CREATE ROLE ADMINISTRADOR;
+
+--Asignamos los roles 
+CREATE LOGIN usuario_candidato WITH PASSWORD = 'Password_Segura123!';
+
+-- Crea el usuario en la base de datos actual
+CREATE USER usuario_candidato FOR LOGIN usuario_candidato;
+
+-- Asigna el rol CANDIDATO
+ALTER ROLE CANDIDATO ADD MEMBER usuario_candidato;
+--------------------------------------------------------------------------------------------------------------
+
+
+--Le asignamos el rol al administrador
+CREATE LOGIN admin_upq WITH PASSWORD = 'Admin_Segura123!';
+
+CREATE USER admin_upq FOR LOGIN admin_upq;
+
+ALTER ROLE ADMINISTRADOR ADD MEMBER admin_upq;
+
+--Los permisos que tiene el candidato
+--Ver su perfil 
+GRANT SELECT, UPDATE ON Candidatos TO CANDIDATO;
+
+-- Ver vacantes
+GRANT SELECT ON Vacantes TO CANDIDATO;
+
+-- Insertar postulaciones
+GRANT INSERT ON Postulaciones TO CANDIDATO;
+
+--Los permisos que tiene el administrador
+-- Gestión total de candidatos
+GRANT SELECT, INSERT, UPDATE, DELETE ON Candidatos TO ADMINISTRADOR;
+
+-- Gestión total de vacantes
+GRANT SELECT, INSERT, UPDATE, DELETE ON Vacantes TO ADMINISTRADOR;
+
+-- Gestión de postulaciones
+GRANT SELECT, UPDATE ON Postulaciones TO ADMINISTRADOR;
