@@ -1,5 +1,5 @@
-CREATE DATABASE Prueba_bolsa;
-USE Prueba_bolsa;
+CREATE DATABASE Bolsa_de_Trabajo;
+USE Bolsa_de_Trabajo;
 
 -- Tabla de usuarios
 CREATE TABLE Usuario (
