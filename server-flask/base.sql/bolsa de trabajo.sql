@@ -112,7 +112,7 @@ CREATE LOGIN admin_upq WITH PASSWORD = 'Admin_Segura123!';
 CREATE USER admin_upq FOR LOGIN admin_upq;
 
 ALTER ROLE ADMINISTRADOR ADD MEMBER admin_upq;
-
+-----------------------------------------------------------------------------------------------------------------
 --Los permisos que tiene el candidato
 --Ver su perfil 
 GRANT SELECT, UPDATE ON Candidatos TO CANDIDATO;
@@ -122,6 +122,7 @@ GRANT SELECT ON Vacantes TO CANDIDATO;
 
 -- Insertar postulaciones
 GRANT INSERT ON Postulaciones TO CANDIDATO;
+-------------------------------------------------------------------------------------------------------------------------------
 
 --Los permisos que tiene el administrador
 -- Gestión total de candidatos
@@ -132,6 +133,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON Vacantes TO ADMINISTRADOR;
 
 -- Gestión de postulaciones
 GRANT SELECT, UPDATE ON Postulaciones TO ADMINISTRADOR;
+------------------------------------------------------------------------------------------------------------------------------
 
 --Funcion1: Numero de postulaciones de una vacante
 CREATE FUNCTION FN_NumeroPostulacionesVacante
@@ -146,7 +148,7 @@ BEGIN
     RETURN @Total;
 END;
 GO
-
+---------------------------------------------------------------------------------------------------------------------------
 --Función2: Estado actual de una vacante
 CREATE FUNCTION FN_EstadoVacante
 (
@@ -160,7 +162,7 @@ BEGIN
     RETURN @Estado;
 END;
 GO
-
+------------------------------------------------------------------------------------------------------------------------------
 --Función3 : Verifica si un candidato ya se postuló
 CREATE FUNCTION FN_ExistePostulacion
 (
@@ -181,7 +183,7 @@ BEGIN
     RETURN @Existe;
 END;
 GO
-
+------------------------------------------------------------------------------------------------------------------------------
 --Consultar numero de postulaciones:
 SELECT dbo.FN_NumeroPostulacionesVacante(1) AS TotalPostulaciones;
 
@@ -194,7 +196,7 @@ WHERE type = 'FN';
 
 --Verificar si un candidato ya se postuló:
 SELECT dbo.FN_ExistePostulacion(1, 2) AS YaPostulado;
-
+--------------------------------------------------------------------------------------------------------------------------------
 -- TRIGGERS
 CREATE TRIGGER TR_AfterInsert_Postulacion
 ON Postulaciones
@@ -206,7 +208,7 @@ BEGIN
     WHERE ID IN (SELECT ID_Vacante FROM inserted);
 END;
 GO
-
+--------------------------------------------------------------------------------------------------------------------------------
 
 CREATE TRIGGER TR_ValidarCierreVacante
 ON Vacantes
@@ -230,7 +232,7 @@ BEGIN
     END
 END;
 GO
-
+-------------------------------------------------------------------------------------------------------------------------------
 --Inserts para verificar info
 INSERT INTO Usuario (NombreUsuario, Correo, Contrasena, ROL, RutaImagen)
 VALUES ('juan_candidato', 'juan@example.com', 'contrasena123', 'CANDIDATO', NULL);
@@ -281,7 +283,7 @@ FROM Vacantes
 WHERE ID = 1;
 
 SELECT * FROM Usuario;
-
+---------------------------------------------------------------------------------------------------------------------------------
 --Procedimientos Almacenados
 --1
 CREATE PROCEDURE SP_RegistrarCandidato
@@ -297,7 +299,7 @@ BEGIN
     VALUES (@ID_Usuario, @Telefono, @Dirreccion, @CV, @Educacion, @Experiencia_Laboral);
 END;
 GO
-
+--------------------------------------------------------------------------------------------------------------------------------
 --2
 CREATE PROCEDURE SP_PostularVacante
     @ID_Candidato INT,
@@ -332,13 +334,13 @@ BEGIN
         RAISERROR('El candidato ya se ha postulado a esta vacante', 16, 1);
         RETURN;
     END;
-
+---------------------------------------------------------------------------------------------------------------------------
     -- Insertar la postulación
     INSERT INTO Postulaciones (ID_Candidato, ID_Vacante, Fecha_Publicacion, Estado)
     VALUES (@ID_Candidato, @ID_Vacante, GETDATE(), 'Pendiente');
 END;
 GO
-
+---------------------------------------------------------------------------------------------------------------------------------
 --3
 CREATE PROCEDURE SP_AceptarCandidato
     @ID_Postulacion INT
@@ -377,6 +379,7 @@ BEGIN
     END CATCH;
 END;
 GO
+---------------------------------------------------------------------------------------------------------------------------------------
 
 --Pruebas
 --1 Registrar candidato
