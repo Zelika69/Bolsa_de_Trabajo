@@ -78,7 +78,6 @@ function Header() {
               ref={profileRef}
             >
               <img 
-                src="https://via.placeholder.com/32" 
                 alt="Perfil" 
                 className="profile-image"
               />

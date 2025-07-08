@@ -11,14 +11,131 @@
   will-change: filter;
   transition: filter 300ms;
 }
-
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
-
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
+
+.tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.tabs button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #f0f0f0;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.tabs button.active {
+  background-color: #6366f1;
+  color: white;
+}
+
+.tabs button:hover:not(.active) {
+  background-color: #e0e7ff;
+}
+
+/* Existing styles */
+
+.form-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.form-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #333333;
+  text-align: center;
+}
+
+.form-error-message {
+  background-color: #ffe6e6;
+  color: #cc0000;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.form-success-message {
+  background-color: #e6ffea;
+  color: #2d7a2d;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #555555;
+}
+
+.form-input, .form-textarea {
+  padding: 10px 12px;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-input:focus, .form-textarea:focus {
+  border-color: #007acc;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 122, 204, 0.5);
+}
+
+.form-button {
+  padding: 12px 20px;
+  background-color: #007acc;
+  color: white;
+  font-weight: 700;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  align-self: center;
+  width: 50%;
+}
+
+.form-button:hover {
+  background-color: #005fa3;
+}
+
+.form-button:active {
+  background-color: #004a7c;
+}
+
 
 @keyframes logo-spin {
   from {
@@ -41,15 +158,4 @@
 
 .read-the-docs {
   color: #888;
-}
-/* Estilos generales de la aplicación */
-.app {
-  padding-top: 70px; /* Compensa el header fixed */
-  min-height: 100vh;
-}
-
-.main-content {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
 }

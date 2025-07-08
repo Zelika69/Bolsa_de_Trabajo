@@ -1,16 +1,34 @@
-import './App.css';
-import Header from './components/Header/Header';
+import { useState } from 'react'
+import './App.css'
+import VacantesForm from './components/VacantesForm'
+import EmpresaForm from './components/EmpresaForm'
+
 
 function App() {
+  const [activeTab, setActiveTab] = useState('vacantes');
+
   return (
-    <div className="app">
-      <Header />
-      <main className="main-content">
-        {/* El resto de tu contenido de la aplicación aquí */}
-        <p>Contenido principal de la aplicación</p>
-      </main>
-    </div>
-  );
+    <>
+      <h1>Bolsa de Trabajo</h1>
+      
+      <div className="tabs">
+        <button 
+          onClick={() => setActiveTab('vacantes')}
+          className={activeTab === 'vacantes' ? 'active' : ''}
+        >
+          Vacantes
+        </button>
+        <button 
+          onClick={() => setActiveTab('empresas')}
+          className={activeTab === 'empresas' ? 'active' : ''}
+        >
+          Empresas
+        </button>
+      </div>
+      
+      {activeTab === 'vacantes' ? <VacantesForm /> : <EmpresaForm />}
+    </>
+  )
 }
 
-export default App;
+export default App
