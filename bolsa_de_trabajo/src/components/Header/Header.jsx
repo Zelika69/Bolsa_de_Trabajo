@@ -1,18 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
+import LoginForm from '../LoginForm';
 import './Header.css';
 
 function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const dropdownRef = useRef(null);
   const profileRef = useRef(null);
 
-  const handleLogin = () => {
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
     setIsLoggedIn(true);
   };
 
   const handleLogout = () => {
+    setUser(null);
     setIsLoggedIn(false);
     setShowDropdown(false);
   };
@@ -37,7 +41,7 @@ function Header() {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {3
+    return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
@@ -80,6 +84,7 @@ function Header() {
               <img 
                 alt="Perfil" 
                 className="profile-image"
+                src={user && user.profileImage ? user.profileImage : '/default-profile.png'}
               />
               {showDropdown && (
                 <div className="dropdown" ref={dropdownRef}>
@@ -90,12 +95,7 @@ function Header() {
               )}
             </div>
           ) : (
-            <div className="auth-buttons">
-              <button className="try-button">Probar gratis</button>
-              <button onClick={handleLogin} className="login-button">
-                Iniciar sesión
-              </button>
-            </div>
+            <LoginForm onLoginSuccess={handleLoginSuccess} />
           )}
         </div>
       </div>
@@ -114,5 +114,6 @@ function Header() {
     </header>
   );
 }
+
 
 export default Header;

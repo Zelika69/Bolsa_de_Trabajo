@@ -9,7 +9,9 @@ function App() {
 
   return (
     <>
-      <h1>Bolsa de Trabajo</h1>
+      <header>
+        <h1>Bolsa de Trabajo</h1>
+      </header>
       
       <div className="tabs">
         <button 

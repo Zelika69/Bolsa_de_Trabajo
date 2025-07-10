@@ -198,11 +198,56 @@
 
   .main-nav {
     display: block;
-    grid-column: 1;
-    grid-row: 1;
-    align-self: center;
   }
+}
 
+/* Estilos para el formulario de login */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 220px;
+}
+
+.login-form div {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-form label {
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.login-form input {
+  padding: 6px 8px;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.login-form button {
+  padding: 8px 12px;
+  background-color: #0067b8;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.login-form button:hover {
+  background-color: #00509e;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.8rem;
+  margin-top: -6px;
+  margin-bottom: 6px;
+}
   .menu-button {
     display: none;
   }
@@ -210,4 +255,3 @@
   .mobile-menu {
     display: none;
   }
-}

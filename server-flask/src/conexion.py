@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 
-# Conexión con pool (ajustable)
+# Configuración de la conexión con pool
 engine = create_engine(
     "mssql+pyodbc://localhost/Bolsa_de_Trabajo?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes",
     pool_size=5,
@@ -10,4 +11,9 @@ engine = create_engine(
 )
 
 def obtener_conexion():
-    return engine.connect()
+    try:
+        conn = engine.connect()
+        return conn
+    except SQLAlchemyError as e:
+        print(f"Error al conectar a la base de datos: {e}")
+        raise e
