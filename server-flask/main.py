@@ -93,7 +93,7 @@ def insertar_empresa():
             INSERT INTO Empresa (
                 ID_Usuario, Nombre, RFC, Direccion, Telefono, Descripcion
             ) VALUES (
-                :ID_Usuario, :Nombre, :RFC, :Direccion, :Telefono, :Descripcion
+                :ID_Usuario, :Nombre, : RFC, :Direccion, :Telefono, :Descripcion
             )
         """)
         conn.execute(query, {
