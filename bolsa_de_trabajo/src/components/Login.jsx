@@ -3,18 +3,15 @@ import './Login.css';
 
 const Login = ({ onLogin, setCurrentView }) => {
   const [formData, setFormData] = useState({
-    email: '',
+    usuario: '',
     password: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Usuarios de ejemplo para demostración
-  const demoUsers = [
-    { email: 'admin@bolsatrabajo.com', password: 'admin123', name: 'Administrador', role: 'admin' },
-    { email: 'recruiter@empresa.com', password: 'recruiter123', name: 'Reclutador', role: 'recruiter' },
-    { email: 'usuario@email.com', password: 'user123', name: 'Usuario', role: 'user' }
-  ];
+  const [showTwoFA, setShowTwoFA] = useState(false);
+  const [twoFACode, setTwoFACode] = useState('');
+  const [tempUserData, setTempUserData] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -35,10 +32,8 @@ const Login = ({ onLogin, setCurrentView }) => {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.email) {
-      newErrors.email = 'El email es requerido';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'El email no es válido';
+    if (!formData.usuario) {
+      newErrors.usuario = 'El usuario/email es requerido';
     }
     
     if (!formData.password) {
@@ -53,42 +48,85 @@ const Login = ({ onLogin, setCurrentView }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const newErrors = validateForm();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
       return;
     }
     
     setIsLoading(true);
     
-    // Simular llamada a API
-    setTimeout(() => {
-      const user = demoUsers.find(
-        u => u.email === formData.email && u.password === formData.password
-      );
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+           usuario: formData.usuario,
+           contrasena: formData.password
+         })
+      });
       
-      if (user) {
-        onLogin({
-          id: Date.now(),
-          name: user.name,
-          email: user.email,
-          role: user.role
-        });
+      const data = await response.json();
+      
+      if (response.ok) {
+        if (data.requiere2FA) {
+          setTempUserData(data);
+          setShowTwoFA(true);
+          // Auto-completar código en desarrollo
+          if (data.codigo_desarrollo) {
+            setTwoFACode(data.codigo_desarrollo);
+          }
+        }
       } else {
-        setErrors({ general: 'Email o contraseña incorrectos' });
+        setErrors({ general: data.error || 'Error en el login' });
       }
-      
+    } catch (error) {
+      setErrors({ general: 'Error de conexión con el servidor' });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
-  const fillDemoCredentials = (userType) => {
-    const user = demoUsers.find(u => u.role === userType);
-    if (user) {
-      setFormData({
-        email: user.email,
-        password: user.password
+  const handleTwoFASubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!twoFACode || twoFACode.length !== 6) {
+      setErrors({ general: 'Código 2FA debe tener 6 dígitos' });
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/verify-2fa', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          usuario_id: tempUserData.usuario_id,
+          codigo: twoFACode
+        })
       });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        onLogin({
+          id: data.usuario.id,
+          name: data.usuario.nombre,
+          email: data.usuario.correo,
+          role: data.usuario.rol
+        });
+      } else {
+        setErrors({ general: data.error || 'Código 2FA inválido' });
+      }
+    } catch (error) {
+      setErrors({ general: 'Error de conexión con el servidor' });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -108,17 +146,17 @@ const Login = ({ onLogin, setCurrentView }) => {
         
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="usuario">Usuario/Email</label>
             <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              id="usuario"
+              name="usuario"
+              value={formData.usuario}
               onChange={handleInputChange}
-              className={`form-input ${errors.email ? 'error' : ''}`}
-              placeholder="tu@email.com"
+              className={`form-input ${errors.usuario ? 'error' : ''}`}
+              placeholder="usuario o email"
             />
-            {errors.email && <span className="error-text">{errors.email}</span>}
+            {errors.usuario && <span className="error-text">{errors.usuario}</span>}
           </div>
           
           <div className="form-group">
@@ -152,32 +190,29 @@ const Login = ({ onLogin, setCurrentView }) => {
           </button>
         </form>
         
-        <div className="demo-section">
-          <p className="demo-title">Cuentas de demostración:</p>
-          <div className="demo-buttons">
-            <button 
-              type="button" 
-              className="demo-btn admin"
-              onClick={() => fillDemoCredentials('admin')}
-            >
-              Admin
-            </button>
-            <button 
-              type="button" 
-              className="demo-btn recruiter"
-              onClick={() => fillDemoCredentials('recruiter')}
-            >
-              Reclutador
-            </button>
-            <button 
-              type="button" 
-              className="demo-btn user"
-              onClick={() => fillDemoCredentials('user')}
-            >
-              Usuario
-            </button>
+        {showTwoFA && (
+          <div className="two-fa-section">
+            <h3>Verificación 2FA</h3>
+            <p>Ingresa el código de 6 dígitos:</p>
+            <form onSubmit={handleTwoFASubmit}>
+              <input
+                type="text"
+                value={twoFACode}
+                onChange={(e) => setTwoFACode(e.target.value)}
+                placeholder="123456"
+                maxLength="6"
+                className="form-input"
+              />
+              <button 
+                type="submit" 
+                className={`login-btn ${isLoading ? 'loading' : ''}`}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Verificando...' : 'Verificar'}
+              </button>
+            </form>
           </div>
-        </div>
+        )}
         
         <div className="login-footer">
           <p>

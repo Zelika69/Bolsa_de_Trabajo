@@ -148,11 +148,27 @@
 .user-menu {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
   background: rgba(255, 255, 255, 0.1);
   padding: 8px 16px;
   border-radius: 25px;
   backdrop-filter: blur(10px);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-photo {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.user-photo:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.05);
 }
 
 .user-welcome {

@@ -235,13 +235,18 @@ GO
 -------------------------------------------------------------------------------------------------------------------------------
 --Inserts para verificar info
 INSERT INTO Usuario (NombreUsuario, Correo, Contrasena, ROL, RutaImagen)
-VALUES ('juan_candidato', 'juan@example.com', 'contrasena123', 'CANDIDATO', NULL);
+VALUES ('juan_candidato', 'juan@example.com', 'contrasena123', 'CANDIDATO', 'usuario1.jpg');
 
 INSERT INTO Candidatos (ID_Usuario, Telefono, Dirreccion, CV, Educacion, Experiencia_Laboral)
 VALUES (1, '4421234567', 'Calle Ficticia 123', 'juan_cv.pdf', 'Licenciatura en Sistemas', '3 años en soporte técnico');
 
 INSERT INTO Usuario (NombreUsuario, Correo, Contrasena, ROL, RutaImagen)
-VALUES ('empresa_upq', 'empresa@example.com', 'empresasegura456', 'ADMINISTRADOR', NULL);
+VALUES ('empresa_upq', 'empresa@example.com', 'empresasegura456', 'ADMINISTRADOR', 'usuario2.jpg');
+
+-- Actualizar usuarios existentes con rutas de imágenes
+UPDATE Usuario SET RutaImagen = 'usuario1.jpg' WHERE NombreUsuario = 'juan_candidato';
+UPDATE Usuario SET RutaImagen = 'usuario2.jpg' WHERE NombreUsuario = 'empresa_upq';
+UPDATE Usuario SET RutaImagen = 'usuario3.jpg' WHERE NombreUsuario = 'usuario2';
 
 INSERT INTO Empresa (ID_Usuario, Nombre, RFC, Direccion, Telefono, Descripcion)
 VALUES (2, 'Tech Soluciones SA', 'ABC123456XYZ', 'Av. Empresa 456', '4427654321', 'Empresa de desarrollo web');

@@ -3,8 +3,10 @@ from flask_cors import CORS
 from src.conexion import obtener_conexion
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+import secrets
+import time
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='src/static')
 CORS(app)
 
 @app.route('/api/usuarios', methods=['GET'])
@@ -113,5 +115,107 @@ def insertar_empresa():
         if conn:
             conn.close()
             
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.json
+    conn = None
+    try:
+        conn = obtener_conexion()
+        
+        # Buscar usuario por nombre de usuario o correo
+        query = text("""
+            SELECT ID, NombreUsuario, Correo, Contrasena, ROL, RutaImagen 
+            FROM Usuario 
+            WHERE NombreUsuario = :usuario OR Correo = :usuario
+        """)
+        result = conn.execute(query, {"usuario": data['usuario']}).fetchone()
+        
+        if not result:
+            return jsonify({"error": "Usuario no encontrado"}), 401
+        
+        # Verificar contraseña (texto plano)
+        if data['contrasena'] != result.Contrasena:
+            return jsonify({"error": "Contraseña incorrecta"}), 401
+        
+        # Mapear roles de la base de datos a roles del frontend
+        role_mapping = {
+            'ADMINISTRADOR': 'admin',
+            'CANDIDATO': 'user',
+            'EMPRESA': 'recruiter'
+        }
+        
+        frontend_role = role_mapping.get(result.ROL, 'user')
+        
+        # Generar código 2FA (simulado)
+        codigo_2fa = str(secrets.randbelow(900000) + 100000)  # Código de 6 dígitos
+        
+        # En un entorno real, aquí enviarías el código por SMS/email
+        # Para desarrollo, devolvemos el código
+        return jsonify({
+            "message": "Código 2FA enviado",
+            "requiere2FA": True,
+            "codigo_desarrollo": codigo_2fa,  # Solo para desarrollo
+            "usuario_id": result.ID,
+            "usuario": result.NombreUsuario,
+            "rol": frontend_role
+        }), 200
+        
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/api/verify-2fa', methods=['POST'])
+def verify_2fa():
+    data = request.json
+    conn = None
+    try:
+        conn = obtener_conexion()
+        
+        # Obtener información del usuario
+        query = text("""
+            SELECT ID, NombreUsuario, Correo, ROL, RutaImagen 
+            FROM Usuario 
+            WHERE ID = :usuario_id
+        """)
+        result = conn.execute(query, {"usuario_id": data['usuario_id']}).fetchone()
+        
+        if not result:
+            return jsonify({"error": "Usuario no encontrado"}), 401
+        
+        # En un entorno real, verificarías el código 2FA aquí
+        # Para desarrollo, aceptamos cualquier código de 6 dígitos
+        codigo = data.get('codigo', '')
+        if len(codigo) != 6 or not codigo.isdigit():
+            return jsonify({"error": "Código 2FA inválido"}), 401
+        
+        # Mapear roles de la base de datos a roles del frontend
+        role_mapping = {
+            'ADMINISTRADOR': 'admin',
+            'CANDIDATO': 'user',
+            'EMPRESA': 'recruiter'
+        }
+        
+        frontend_role = role_mapping.get(result.ROL, 'user')
+        
+        # Login exitoso
+        return jsonify({
+            "message": "Login exitoso",
+            "usuario": {
+                "id": result.ID,
+                "nombre": result.NombreUsuario,
+                "correo": result.Correo,
+                "rol": frontend_role,
+                "rutaImagen": result.RutaImagen
+            }
+        }), 200
+        
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

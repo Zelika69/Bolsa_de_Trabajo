@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
@@ -11,6 +11,19 @@ import JobForm from './components/JobForm';
 function App() {
   const [currentView, setCurrentView] = useState('home');
   const [user, setUser] = useState(null);
+
+  // Cargar sesión desde localStorage al inicializar
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Error parsing saved user data:', error);
+        localStorage.removeItem('user');
+      }
+    }
+  }, []);
   const [jobs, setJobs] = useState([
     {
       id: 1,
@@ -86,11 +99,13 @@ function App() {
 
   const handleLogin = (userData) => {
     setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
     setCurrentView('home');
   };
 
   const handleLogout = () => {
     setUser(null);
+    localStorage.removeItem('user');
     setCurrentView('home');
   };
 
