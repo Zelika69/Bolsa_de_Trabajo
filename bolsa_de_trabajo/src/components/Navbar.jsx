@@ -89,26 +89,31 @@ const Navbar = ({ currentView, setCurrentView, user, onLogout }) => {
           <div className="user-menu">
             <div className="user-info">
               <img 
-                src={user.rutaImagen ? 
-                  `http://127.0.0.1:5000/static/images/${user.role === 'admin' ? 'administrador' : user.role === 'recruiter' ? 'empresa' : 'candidato'}/${user.rutaImagen}` :
-                  `http://127.0.0.1:5000/static/images/default/${user.role === 'admin' ? 'admin_default.svg' : user.role === 'recruiter' ? 'company_default.svg' : 'user_default.svg'}`
-                } 
-                alt="Foto de perfil" 
-                className="user-photo"
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  marginRight: '8px',
-                  objectFit: 'cover'
-                }}
-              />
+                 src={user.rutaImagen ? 
+                   `http://127.0.0.1:5000/static/images/${user.role === 'admin' ? 'administrador' : user.role === 'recruiter' ? 'empresa' : 'candidato'}/${user.rutaImagen}` :
+                   `http://127.0.0.1:5000/static/images/default/${user.role === 'admin' ? 'admin_default.svg' : user.role === 'recruiter' ? 'company_default.svg' : 'user_default.svg'}`
+                 } 
+                 alt="Foto de perfil" 
+                 className="user-photo"
+                />
               <span className="user-welcome">Hola, {user.name}</span>
+              <span className="user-role">
+                {user.role === 'admin' ? 'ADMINISTRADOR' : 
+                 user.role === 'recruiter' ? 'EMPRESA' : 
+                 user.role === 'user' ? 'CANDIDATO' : 'USER'}
+              </span>
             </div>
-            <span className="user-role">({user.role})</span>
-            <button className="auth-btn logout-btn" onClick={onLogout}>
-              Cerrar Sesión
-            </button>
+            <div className="user-actions">
+              <button 
+                className={`profile-btn ${currentView === 'profile' ? 'active' : ''}`}
+                onClick={() => handleNavClick('profile')}
+              >
+                Perfil
+              </button>
+              <button className="auth-btn logout-btn" onClick={onLogout}>
+                Salir
+              </button>
+            </div>
           </div>
         )}
       </div>

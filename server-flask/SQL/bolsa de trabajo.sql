@@ -1,5 +1,5 @@
-CREATE DATABASE Bolsa_de_Trabajo;
-USE Bolsa_de_Trabajo;
+CREATE DATABASE Bolsade_Trabajo_;
+USE Bolsade_Trabajo_;
 
 -- Tabla de usuarios
 CREATE TABLE Usuario (
@@ -90,97 +90,114 @@ CREATE TABLE Candidato_Habilidad (
     PRIMARY KEY (ID_Candidato, ID_Habilidad)
 );
 
-------------------------------------------------------------------------------------------------------
---Creacion de los roles 
-CREATE ROLE CANDIDATO;
-CREATE ROLE ADMINISTRADOR;
+--------------------------------------------------------------------------------------------------------
+--Creacion de los roles que representarán los tipos de usuario en el sistema 
+CREATE ROLE CANDIDATO; -- Rol para los usuarios que buscan empleo (candidatos)
+CREATE ROLE ADMINISTRADOR; -- Rol para los usuarios encargados de gestionar la plataforma (administradores)
 
---Asignamos los roles 
+-- Creamos un login, que es la cuenta que se usara para conectarse al servidor SQL
+-- Este login incluye un nombre de usuario y una contraseña segura 
 CREATE LOGIN usuario_candidato WITH PASSWORD = 'Password_Segura123!';
 
--- Crea el usuario en la base de datos actual
+-- Creamos un usuario dentro de la base de datos y lo vinculamos con el login anterior
+-- Este usuario es el que podrá interactuar con los datos, tablas y funciones
 CREATE USER usuario_candidato FOR LOGIN usuario_candidato;
 
--- Asigna el rol CANDIDATO
+-- Finalmente, agregamos el usuario creado al rol "CANDIDATO".
+-- Esto le asigna automáticamente todos los permisos que tenga ese rol, facilitando así la administración de privilegios
 ALTER ROLE CANDIDATO ADD MEMBER usuario_candidato;
 --------------------------------------------------------------------------------------------------------------
-
-
---Le asignamos el rol al administrador
+-- Creamos un login para el administrador
+-- Este login permite que el usuario "admin_upq" pueda conectarse al servidor de base de datos usando una contraseña segura
 CREATE LOGIN admin_upq WITH PASSWORD = 'Admin_Segura123!';
 
+-- Creamos un usuario dentro de la base de datos y lo vinculamos con el login que acabamos de crear.
+-- Esto permite que el usuario admin_upq pueda interactuar con los objetos de la base de datos
 CREATE USER admin_upq FOR LOGIN admin_upq;
 
+-- Asignamos el rol "ADMINISTRADOR" al usuario admin_upq.
+-- Esto le da automáticamente todos los privilegios o permisos que tenga el rol, no necesitamos asignarle permisos uno por uno
 ALTER ROLE ADMINISTRADOR ADD MEMBER admin_upq;
 -----------------------------------------------------------------------------------------------------------------
---Los permisos que tiene el candidato
---Ver su perfil 
+-- Asignamos los permisos que tendrá el rol CANDIDATO.
+-- Permiso para que el candidato pueda ver (SELECT) y actualizar (UPDATE) su propia información en la tabla "Candidatos".
 GRANT SELECT, UPDATE ON Candidatos TO CANDIDATO;
 
--- Ver vacantes
+-- Permiso para consultar las vacantes disponibles en la tabla "Vacantes", el candidato no puede modificar esta tabla, solo puede verla.
 GRANT SELECT ON Vacantes TO CANDIDATO;
 
--- Insertar postulaciones
+-- Permiso para agregar nuevas postulaciones en la tabla "Postulaciones", esto le permite al candidato postularse a las vacantes de su interés.
 GRANT INSERT ON Postulaciones TO CANDIDATO;
 -------------------------------------------------------------------------------------------------------------------------------
+-- Asignamos los permisos que tendrá el rol ADMINISTRADOR.
 
---Los permisos que tiene el administrador
--- Gestión total de candidatos
+-- Permisos completos sobre la tabla "Candidatos":
+-- Puede consultar (SELECT), agregar nuevos candidatos (INSERT), actualizar sus datos (UPDATE) y eliminarlos (DELETE).
+-- Esto permite una administración total del registro de usuarios candidatos
 GRANT SELECT, INSERT, UPDATE, DELETE ON Candidatos TO ADMINISTRADOR;
 
--- Gestión total de vacantes
+-- Permisos completos sobre la tabla "Vacantes":
+-- El administrador puede ver las vacantes, registrar nuevas, editarlas o eliminarlas. Esto es útil para gestionar las oportunidades laborales disponibles.
 GRANT SELECT, INSERT, UPDATE, DELETE ON Vacantes TO ADMINISTRADOR;
 
--- Gestión de postulaciones
+-- Permisos para gestionar postulaciones:
+-- Puede consultar las postulaciones realizadas por los candidatos y actualizarlas si es necesario.
+-- Por ejemplo, puede cambiar su estado (aceptada, en revisión, rechazada, etc.)
 GRANT SELECT, UPDATE ON Postulaciones TO ADMINISTRADOR;
 ------------------------------------------------------------------------------------------------------------------------------
-
---Funcion1: Numero de postulaciones de una vacante
+---------FUNCIONES-------------
+-- Creamos una función llamada "FN_NumeroPostulacionesVacante".
+-- Esta función recibe como parámetro el ID de una vacante y devuelve la cantidad total de postulaciones que tiene esa vacante.
 CREATE FUNCTION FN_NumeroPostulacionesVacante
 (
-    @ID_Vacante INT
+    @ID_Vacante INT -- Este es el parámetro de entrada: el identificador de la vacante que queremos consultar.
 )
-RETURNS INT
+RETURNS INT -- Especificamos que esta función va a devolver un valor entero (INT), que será el número total de postulaciones.
 AS
 BEGIN
-    DECLARE @Total INT;
+    DECLARE @Total INT; -- Declaramos una variable interna para guardar el conteo de postulaciones.
+	-- Usamos una consulta para contar cuántas filas existen en la tabla "Postulaciones" que correspondan al ID de vacante recibido como parámetro.
     SELECT @Total = COUNT(*) FROM Postulaciones WHERE ID_Vacante = @ID_Vacante;
-    RETURN @Total;
+    RETURN @Total; -- Devolvemos el total de postulaciones encontradas.
 END;
-GO
+GO -- Finaliza la creación de la función.
 ---------------------------------------------------------------------------------------------------------------------------
 --Función2: Estado actual de una vacante
+-- Esta función sirve para obtener el estado actual de una vacante específica (por ejemplo: 'Activa', 'Cerrada', 'En revisión', etc.)
 CREATE FUNCTION FN_EstadoVacante
 (
-    @ID_Vacante INT
+    @ID_Vacante INT -- Parámetro de entrada: el identificador de la vacante de la cual queremos saber el estado
 )
-RETURNS VARCHAR(50)
+RETURNS VARCHAR(50) -- Indicamos que esta función devuelve una cadena de texto (de hasta 50 caracteres)
 AS
 BEGIN
-    DECLARE @Estado VARCHAR(50);
+    DECLARE @Estado VARCHAR(50); -- Creamos una variable para almacenar temporalmente el estado de la vacante
+	-- Buscamos el estado correspondiente en la tabla "Vacantes"
+    -- usando el ID que se recibió como parámetro
     SELECT @Estado = Estado FROM Vacantes WHERE ID = @ID_Vacante;
-    RETURN @Estado;
+    RETURN @Estado;-- Devolvemos el estado encontrado
 END;
 GO
 ------------------------------------------------------------------------------------------------------------------------------
---Función3 : Verifica si un candidato ya se postuló
+--Función3 : Sirve para verificar si un candidato ya se ha postulado a una vacante específica
 CREATE FUNCTION FN_ExistePostulacion
 (
-    @ID_Candidato INT,
-    @ID_Vacante INT
+    @ID_Candidato INT, -- Parámetro de entrada: el ID del candidato
+    @ID_Vacante INT -- Parámetro de entrada: el ID de la vacante
 )
-RETURNS BIT
+RETURNS BIT -- La función devuelve un valor de tipo BIT (es decir, 1 o 0 → verdadero o falso)
 AS
 BEGIN
-    DECLARE @Existe BIT;
+    DECLARE @Existe BIT; -- Declaramos una variable que almacenará el resultado (1 si existe la postulación, 0 si no)
+	-- Verificamos si hay al menos un registro en la tabla "Postulaciones" que coincida con el candidato y la vacante proporcionados
     IF EXISTS (
         SELECT 1 FROM Postulaciones
         WHERE ID_Candidato = @ID_Candidato AND ID_Vacante = @ID_Vacante
     )
-        SET @Existe = 1;
+        SET @Existe = 1; -- Si se encontró al menos una coincidencia, asignamos 1 (sí existe)
     ELSE
-        SET @Existe = 0;
-    RETURN @Existe;
+        SET @Existe = 0; -- Si no hay coincidencia, asignamos 0 (no existe)
+    RETURN @Existe; -- Devolvemos el resultado
 END;
 GO
 ------------------------------------------------------------------------------------------------------------------------------
@@ -190,6 +207,8 @@ SELECT dbo.FN_NumeroPostulacionesVacante(1) AS TotalPostulaciones;
 --Consultar estado de vacante:
 SELECT dbo.FN_EstadoVacante(3) AS EstadoVacante;
 
+-- Consulta del sistema que muestra todas las funciones definidas por el usuario en la base de datos
+-- Esto es útil para verificar qué funciones has creado y tener una lista rápida de ellas
 SELECT name
 FROM sys.objects
 WHERE type = 'FN';
@@ -198,55 +217,58 @@ WHERE type = 'FN';
 SELECT dbo.FN_ExistePostulacion(1, 2) AS YaPostulado;
 --------------------------------------------------------------------------------------------------------------------------------
 -- TRIGGERS
+-- Creamos un trigger llamado "TR_AfterInsert_Postulacion"
+-- Este trigger se ejecuta automáticamente después de que se inserta una nueva postulación en la tabla "Postulaciones"
 CREATE TRIGGER TR_AfterInsert_Postulacion
-ON Postulaciones
-AFTER INSERT
+ON Postulaciones -- Especificamos que este trigger se aplica a la tabla "Postulaciones"
+AFTER INSERT -- Indica que el trigger se dispara justo después de una inserción de datos
 AS
 BEGIN
+	-- Actualizamos la tabla "Vacantes"
+    -- Aumentamos en 1 el valor de "CantidadPostulaciones" para cada vacante relacionada con la nueva postulación insertada
     UPDATE Vacantes
     SET CantidadPostulaciones = CantidadPostulaciones + 1
-    WHERE ID IN (SELECT ID_Vacante FROM inserted);
+    WHERE ID IN (SELECT ID_Vacante FROM inserted); -- "inserted" es una tabla virtual que contiene los datos recién insertados en "Postulaciones"
 END;
 GO
 --------------------------------------------------------------------------------------------------------------------------------
-
+-- Creamos un trigger llamado "TR_ValidarCierreVacante"
+-- Este trigger se activa automáticamente después de una actualización en la tabla "Vacantes"
 CREATE TRIGGER TR_ValidarCierreVacante
 ON Vacantes
-AFTER UPDATE
+AFTER UPDATE -- Se ejecuta después de que se realiza una actualización en cualquier registro de la tabla "Vacantes"
 AS
 BEGIN
+	-- Verificamos si alguna vacante actualizada tiene una fecha de cierre (es decir, se intenta cerrar), pero no tiene ninguna postulación asociada
     IF EXISTS (
         SELECT 1
-        FROM inserted i
-        JOIN Vacantes v ON i.ID = v.ID
-        WHERE i.Fecha_Cierre IS NOT NULL
+        FROM inserted i -- "inserted" es una tabla virtual con los valores nuevos que se están actualizando
+        JOIN Vacantes v ON i.ID = v.ID -- Confirmamos que trabajamos con los mismos registros
+        WHERE i.Fecha_Cierre IS NOT NULL -- Si se ha colocado una fecha de cierre
           AND NOT EXISTS (
+		  -- Y no existe ninguna postulación para esa vacante
               SELECT 1
               FROM Postulaciones p
               WHERE p.ID_Vacante = v.ID
           )
     )
     BEGIN
+	-- Si se cumple la condición anterior, detenemos la transacción y mostramos un mensaje de error
         RAISERROR('No se puede cerrar la vacante porque no hay postulaciones registradas', 16, 1);
-        ROLLBACK TRANSACTION;
+        ROLLBACK TRANSACTION; -- Cancelamos los cambios realizados en la transacción
     END
 END;
 GO
 -------------------------------------------------------------------------------------------------------------------------------
 --Inserts para verificar info
 INSERT INTO Usuario (NombreUsuario, Correo, Contrasena, ROL, RutaImagen)
-VALUES ('juan_candidato', 'juan@example.com', 'contrasena123', 'CANDIDATO', 'usuario1.jpg');
+VALUES ('juan_candidato', 'juan@example.com', 'contrasena123', 'CANDIDATO', NULL);
 
 INSERT INTO Candidatos (ID_Usuario, Telefono, Dirreccion, CV, Educacion, Experiencia_Laboral)
 VALUES (1, '4421234567', 'Calle Ficticia 123', 'juan_cv.pdf', 'Licenciatura en Sistemas', '3 años en soporte técnico');
 
 INSERT INTO Usuario (NombreUsuario, Correo, Contrasena, ROL, RutaImagen)
-VALUES ('empresa_upq', 'empresa@example.com', 'empresasegura456', 'ADMINISTRADOR', 'usuario2.jpg');
-
--- Actualizar usuarios existentes con rutas de imágenes
-UPDATE Usuario SET RutaImagen = 'usuario1.jpg' WHERE NombreUsuario = 'juan_candidato';
-UPDATE Usuario SET RutaImagen = 'usuario2.jpg' WHERE NombreUsuario = 'empresa_upq';
-UPDATE Usuario SET RutaImagen = 'usuario3.jpg' WHERE NombreUsuario = 'usuario2';
+VALUES ('empresa_upq', 'empresa@example.com', 'empresasegura456', 'ADMINISTRADOR', NULL);
 
 INSERT INTO Empresa (ID_Usuario, Nombre, RFC, Direccion, Telefono, Descripcion)
 VALUES (2, 'Tech Soluciones SA', 'ABC123456XYZ', 'Av. Empresa 456', '4427654321', 'Empresa de desarrollo web');

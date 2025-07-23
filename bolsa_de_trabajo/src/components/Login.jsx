@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import './Login.css';
 
+// Función para encriptar contraseña (debe coincidir con Register.jsx)
+const encryptPassword = (password) => {
+  return btoa(password); // Mismo método que en Register.jsx
+};
+
 const Login = ({ onLogin, setCurrentView }) => {
   const [formData, setFormData] = useState({
     usuario: '',
@@ -64,7 +69,7 @@ const Login = ({ onLogin, setCurrentView }) => {
         },
         body: JSON.stringify({
            usuario: formData.usuario,
-           contrasena: formData.password
+           contrasena: encryptPassword(formData.password)
          })
       });
       
@@ -114,11 +119,19 @@ const Login = ({ onLogin, setCurrentView }) => {
       const data = await response.json();
       
       if (response.ok) {
+        // El backend ya devuelve el rol mapeado en el campo 'role'
+        const frontendRole = data.usuario.role;
+        
+        // Guardar ID de usuario y tipo en localStorage
+        localStorage.setItem('userId', data.usuario.id);
+        localStorage.setItem('userType', frontendRole);
+        
         onLogin({
           id: data.usuario.id,
           name: data.usuario.nombre,
           email: data.usuario.correo,
-          role: data.usuario.rol
+          role: frontendRole,
+          rutaImagen: data.usuario.rutaImagen
         });
       } else {
         setErrors({ general: data.error || 'Código 2FA inválido' });

@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
 import './Register.css';
+import axios from 'axios';
+
+// Función para encriptar contraseña (ejemplo básico)
+const encryptPassword = (password) => {
+  // En un caso real, usaría una librería como bcryptjs o similar
+  return btoa(password); // Solo como ejemplo, NO usar en producción
+};
 
 const Register = ({ setCurrentView }) => {
   const [formData, setFormData] = useState({
@@ -11,6 +18,7 @@ const Register = ({ setCurrentView }) => {
     phone: '',
     userType: 'user',
     company: '',
+    nombreUsuario: '',
     acceptTerms: false
   });
   const [errors, setErrors] = useState({});
@@ -31,6 +39,14 @@ const Register = ({ setCurrentView }) => {
         [name]: ''
       }));
     }
+    
+    // Limpiar error del servidor cuando se modifique cualquier campo
+    if (errors.server) {
+      setErrors(prev => ({
+        ...prev,
+        server: ''
+      }));
+    }
   };
 
   const validateForm = () => {
@@ -42,6 +58,10 @@ const Register = ({ setCurrentView }) => {
     
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'El apellido es requerido';
+    }
+    
+    if (!formData.nombreUsuario.trim()) {
+      newErrors.nombreUsuario = 'El nombre de usuario es requerido';
     }
     
     if (!formData.email) {
@@ -62,6 +82,8 @@ const Register = ({ setCurrentView }) => {
     
     if (!formData.phone.trim()) {
       newErrors.phone = 'El teléfono es requerido';
+    } else if (!/^[0-9+\s]+$/.test(formData.phone)) {
+      newErrors.phone = 'Teléfono no válido';
     }
     
     if (formData.userType === 'recruiter' && !formData.company.trim()) {
@@ -75,6 +97,8 @@ const Register = ({ setCurrentView }) => {
     return newErrors;
   };
 
+  const [successMessage, setSuccessMessage] = useState('');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -86,16 +110,67 @@ const Register = ({ setCurrentView }) => {
     
     setIsLoading(true);
     
-    // Simular llamada a API
-    setTimeout(() => {
-      setSuccess(true);
-      setIsLoading(false);
+    try {
+      // Preparar datos para enviar al backend
+      const dataToSend = {
+        nombre: formData.firstName,
+        apellido: formData.lastName,
+        nombreUsuario: formData.nombreUsuario,
+        correo: formData.email,
+        contrasena: encryptPassword(formData.password),
+        userType: formData.userType,
+        telefono: formData.phone,
+        empresa: formData.company
+      };
       
-      // Redirigir al login después de 2 segundos
-      setTimeout(() => {
-        setCurrentView('login');
-      }, 2000);
-    }, 1500);
+      // Llamada a la API de registro
+      const response = await axios.post('http://localhost:5000/api/register', dataToSend);
+      
+      if (response.status === 201) {
+        // Guardar ID de usuario y tipo en localStorage para uso posterior
+        localStorage.setItem('userId', response.data.usuario_id);
+        localStorage.setItem('userType', formData.userType);
+        
+        setSuccess(true);
+        
+        // Obtener mensaje personalizado del backend
+        const mainMessage = '¡Registro exitoso! Ahora puedes iniciar sesión con tus credenciales.';
+        const detailMessage = response.data.detail || '';
+        
+        // Mostrar mensaje de éxito con detalles adicionales
+        setSuccessMessage(`${mainMessage}\n${detailMessage}`);
+        
+        // Redirigir al login después de 2 segundos
+        setTimeout(() => {
+          // Redirigir al login para que el usuario pueda iniciar sesión
+          setCurrentView('login');
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error al registrar usuario:', error);
+      
+      if (error.response && error.response.data && error.response.data.error) {
+        // Mostrar error del servidor
+        setErrors(prev => ({
+          ...prev,
+          server: error.response.data.error
+        }));
+      } else if (error.request) {
+        // Error de conexión (no hubo respuesta)
+        setErrors(prev => ({
+          ...prev,
+          server: 'No se pudo conectar al servidor. Inténtalo de nuevo más tarde.'
+        }));
+      } else {
+        // Error genérico
+        setErrors(prev => ({
+          ...prev,
+          server: 'Error al crear la cuenta. Inténtalo de nuevo más tarde.'
+        }));
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (success) {
@@ -104,7 +179,7 @@ const Register = ({ setCurrentView }) => {
         <div className="success-card">
           <div className="success-icon">✅</div>
           <h2>¡Registro Exitoso!</h2>
-          <p>Tu cuenta ha sido creada correctamente.</p>
+          <p>{successMessage || 'Tu cuenta ha sido creada correctamente.'}</p>
           <p>Serás redirigido al login en unos segundos...</p>
         </div>
       </div>
@@ -120,6 +195,12 @@ const Register = ({ setCurrentView }) => {
         </div>
         
         <form onSubmit={handleSubmit} className="register-form">
+          {errors.server && (
+            <div className="error-banner">
+              <span className="error-text">{errors.server}</span>
+            </div>
+          )}
+          
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="firstName">Nombre *</label>
@@ -148,6 +229,20 @@ const Register = ({ setCurrentView }) => {
               />
               {errors.lastName && <span className="error-text">{errors.lastName}</span>}
             </div>
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="nombreUsuario">Nombre de Usuario *</label>
+            <input
+              type="text"
+              id="nombreUsuario"
+              name="nombreUsuario"
+              value={formData.nombreUsuario}
+              onChange={handleInputChange}
+              className={`form-input ${errors.nombreUsuario ? 'error' : ''}`}
+              placeholder="Nombre de usuario único"
+            />
+            {errors.nombreUsuario && <span className="error-text">{errors.nombreUsuario}</span>}
           </div>
           
           <div className="form-group">
@@ -260,7 +355,11 @@ const Register = ({ setCurrentView }) => {
             className={`register-btn ${isLoading ? 'loading' : ''}`}
             disabled={isLoading}
           >
-            {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
+            {isLoading ? (
+              <>
+                <span className="spinner"></span> Creando cuenta...
+              </>
+            ) : 'Crear Cuenta'}
           </button>
         </form>
         

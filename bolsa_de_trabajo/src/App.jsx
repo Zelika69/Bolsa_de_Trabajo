@@ -7,117 +7,107 @@ import Login from './components/Login';
 import Register from './components/Register';
 import AdminPanel from './components/AdminPanel';
 import JobForm from './components/JobForm';
+import ProfileCandidate from './components/ProfileCandidate';
+import ProfileCompany from './components/ProfileCompany';
+import ProfileRouter from './components/ProfileRouter';
+
+// Datos iniciales podrían moverse a un archivo aparte
+const initialJobs = [
+  {
+    id: 1,
+    title: 'Desarrollador Frontend React',
+    company: 'TechCorp',
+    location: 'Ciudad de México',
+    salary: '$25,000 - $35,000',
+    description: 'Buscamos un desarrollador Frontend con experiencia en React y TypeScript. CSS y HTML avanzado.',
+    requirements: 'React, TypeScript, Tailwind CSS',
+    type: 'Tiempo Completo',
+    experience: '1-2 años',
+    remote: false,
+    hybrid: false,
+    featured: true
+  },
+  // ... otros trabajos
+];
 
 function App() {
   const [currentView, setCurrentView] = useState('home');
   const [user, setUser] = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Cargar sesión desde localStorage al inicializar
+  // Cargar sesión y trabajos al inicializar
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing saved user data:', error);
-        localStorage.removeItem('user');
+    // Cargar usuario
+    const loadUser = () => {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
+        } catch (error) {
+          console.error('Error parsing saved user data:', error);
+          localStorage.removeItem('user');
+        }
       }
-    }
+    };
+
+    // Cargar trabajos (en un caso real sería una API call)
+    const loadJobs = () => {
+      setLoading(true);
+      // Simular carga de API
+      setTimeout(() => {
+        const savedJobs = localStorage.getItem('jobs');
+        setJobs(savedJobs ? JSON.parse(savedJobs) : initialJobs);
+        setLoading(false);
+      }, 500);
+    };
+
+    loadUser();
+    loadJobs();
   }, []);
-  const [jobs, setJobs] = useState([
-    {
-      id: 1,
-      title: 'Desarrollador Frontend React',
-      company: 'TechCorp',
-      location: 'Ciudad de México',
-      salary: '$25,000 - $35,000',
-      description: 'Buscamos un desarrollador Frontend con experiencia en React y TypeScript. CSS y HTML avanzado.',
-      requirements: 'React, TypeScript, Tailwind CSS',
-      type: 'Tiempo Completo',
-      experience: '1-2 años',
-      remote: false,
-      hybrid: false,
-      featured: true
-    },
-    {
-      id: 2,
-      title: 'Diseñador UX/UI',
-      company: 'DesignStudio',
-      location: 'Guadalajara',
-      salary: '$20,000 - $30,000',
-      description: 'Únete a nuestro equipo creativo como diseñador UX/UI. Trabajarás en proyectos innovadores para web y móviles.',
-      requirements: 'Figma, Adobe XD, Photoshop',
-      type: 'Tiempo Completo',
-      experience: 'Sin experiencia',
-      remote: false,
-      hybrid: true,
-      featured: true
-    },
-    {
-      id: 3,
-      title: 'Desarrollador Full Stack',
-      company: 'InnovaTech',
-      location: 'Remoto',
-      salary: '$30,000 - $45,000',
-      description: 'Desarrollador Full Stack con experiencia en Node.js, React y bases de datos. Oportunidad de trabajo en proyectos...',
-      requirements: 'Node.js, React, MongoDB',
-      type: 'Tiempo Completo',
-      experience: '3-5 años',
-      remote: true,
-      hybrid: false,
-      featured: false
-    },
-    {
-      id: 4,
-      title: 'Data Scientist',
-      company: 'DataCorp',
-      location: 'Monterrey',
-      salary: '$28,000 - $38,000',
-      description: 'Buscamos un Data Scientist para análisis de datos y machine learning. Experiencia con Python y SQL requerida.',
-      requirements: 'Python, SQL, Machine Learning',
-      type: 'Medio Tiempo',
-      experience: '1-2 años',
-      remote: false,
-      hybrid: true,
-      featured: false
-    },
-    {
-      id: 5,
-      title: 'Desarrollador Backend',
-      company: 'StartupTech',
-      location: 'Ciudad de México',
-      salary: '$32,000 - $42,000',
-      description: 'Desarrollador Backend especializado en APIs REST y microservicios. Ambiente dinámico y en crecimiento.',
-      requirements: 'Node.js, Express, PostgreSQL',
-      type: 'Tiempo Completo',
-      experience: '+5 años',
-      remote: false,
-      hybrid: false,
-      featured: true
+
+  // Persistir trabajos cuando cambian
+  useEffect(() => {
+    if (jobs.length > 0) {
+      localStorage.setItem('jobs', JSON.stringify(jobs));
     }
-  ]);
+  }, [jobs]);
 
   const handleLogin = (userData) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('userId', userData.id); // Sincronizar userId
+    
+    // Establecer userType basado en el rol del usuario
+    const userType = userData.role; // Usar directamente el rol del backend
+    localStorage.setItem('userType', userType);
+    
     setCurrentView('home');
   };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userType');
     setCurrentView('home');
   };
 
   const addJob = (newJob) => {
-    const job = {
+    const jobWithId = {
       ...newJob,
-      id: jobs.length + 1
+      id: Date.now(), // Mejor que jobs.length + 1
+      createdAt: new Date().toISOString()
     };
-    setJobs([...jobs, job]);
+    setJobs([...jobs, jobWithId]);
   };
 
   const renderCurrentView = () => {
+    if (loading) {
+      return <div className="loading-spinner">Cargando...</div>;
+    }
+
     switch(currentView) {
       case 'home':
         return <Home jobs={jobs} />;
@@ -128,13 +118,19 @@ function App() {
       case 'register':
         return <Register setCurrentView={setCurrentView} />;
       case 'admin':
-        return user && user.role === 'admin' ? 
+        return user?.role === 'admin' ? 
           <AdminPanel jobs={jobs} setJobs={setJobs} /> : 
           <div className="access-denied">Acceso denegado</div>;
       case 'add-job':
-        return user && (user.role === 'admin' || user.role === 'recruiter') ? 
+        return user?.role === 'admin' || user?.role === 'recruiter' ? 
           <JobForm onSubmit={addJob} setCurrentView={setCurrentView} /> : 
           <div className="access-denied">Acceso denegado</div>;
+      case 'profile':
+        return <ProfileRouter user={user} setCurrentView={setCurrentView} />;
+      case 'profileCandidate':
+        return user ? <ProfileCandidate user={user} /> : <div>Por favor inicie sesión</div>;
+      case 'profileCompany':
+        return user ? <ProfileCompany user={user} /> : <div>Por favor inicie sesión</div>;
       default:
         return <Home jobs={jobs} />;
     }
