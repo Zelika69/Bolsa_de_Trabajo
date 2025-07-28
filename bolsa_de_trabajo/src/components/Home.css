@@ -510,35 +510,151 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .hero {
-    padding: 80px 0 60px;
+    padding: 90px 0 70px;
+  }
+  
+  .hero h1 {
+    font-size: 3rem;
+  }
+  
+  .hero p {
+    font-size: 1.2rem;
+  }
+  
+  .hero-stats {
+    gap: 50px;
+  }
+  
+  .search-section {
+    padding: 50px 0;
+  }
+  
+  .search-container h2 {
+    font-size: 2rem;
+  }
+  
+  .featured-jobs,
+  .categories,
+  .cta-section {
+    padding: 60px 0;
+  }
+  
+  .jobs-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+  }
+  
+  .categories-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home {
+    padding-top: 80px; /* Espacio para navbar */
+  }
+  
+  .hero {
+    padding: 70px 0 50px;
+  }
+  
+  .hero-content {
+    padding: 0 15px;
   }
   
   .hero h1 {
     font-size: 2.5rem;
+    margin-bottom: 15px;
   }
   
   .hero p {
     font-size: 1.1rem;
+    margin-bottom: 30px;
   }
   
   .hero-stats {
     flex-direction: column;
-    gap: 30px;
+    gap: 25px;
+    margin-top: 40px;
+  }
+  
+  .stat h3 {
+    font-size: 2rem;
+  }
+  
+  .search-section {
+    padding: 40px 0;
+    margin-top: -30px;
+  }
+  
+  .search-container {
+    padding: 0 15px;
+  }
+  
+  .search-container h2 {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
   }
   
   .search-form {
     flex-direction: column;
+    gap: 12px;
+    padding: 15px;
+  }
+  
+  .search-input {
+    padding: 14px 18px;
+    font-size: 15px;
   }
   
   .search-btn {
-    padding: 15px;
+    padding: 14px 25px;
+    font-size: 15px;
+  }
+  
+  .featured-jobs,
+  .categories {
+    padding: 50px 0;
+  }
+  
+  .section-header h2 {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+  
+  .section-header p {
+    font-size: 1rem;
   }
   
   .jobs-grid {
     grid-template-columns: 1fr;
     gap: 20px;
+    margin-top: 30px;
+  }
+  
+  .job-content {
+    padding: 25px;
+  }
+  
+  .job-title {
+    font-size: 1.2rem;
+  }
+  
+  .job-company {
+    font-size: 1rem;
+  }
+  
+  .job-actions {
+    gap: 8px;
+  }
+  
+  .view-details-btn,
+  .apply-btn {
+    padding: 10px 16px;
+    font-size: 13px;
   }
   
   .categories-grid {
@@ -546,40 +662,381 @@
     gap: 20px;
   }
   
-  .featured-jobs h2,
-  .categories h2,
+  .category-card {
+    padding: 30px 15px;
+  }
+  
+  .category-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+  }
+  
+  .category-card h3 {
+    font-size: 1.2rem;
+  }
+  
+  .cta-section {
+    padding: 60px 0;
+  }
+  
   .cta-section h2 {
     font-size: 2rem;
   }
+  
+  .cta-section p {
+    font-size: 1.1rem;
+  }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+  .home {
+    padding-top: 70px;
+  }
+  
   .hero {
     padding: 60px 0 40px;
   }
   
   .hero h1 {
-    font-size: 2rem;
+    font-size: 2.2rem;
   }
   
   .hero p {
     font-size: 1rem;
   }
   
-  .search-container,
-  .hero-content {
-    padding: 0 15px;
+  .hero-stats {
+    gap: 20px;
+    margin-top: 30px;
   }
   
-  .job-card {
+  .stat h3 {
+    font-size: 1.8rem;
+  }
+  
+  .search-section {
+    padding: 35px 0;
+  }
+  
+  .search-container {
+    padding: 0 12px;
+  }
+  
+  .search-container h2 {
+    font-size: 1.6rem;
+  }
+  
+  .search-form {
+    padding: 12px;
+  }
+  
+  .search-input {
+    padding: 12px 16px;
+    font-size: 16px; /* Evita zoom en iOS */
+  }
+  
+  .search-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+  
+  .featured-jobs,
+  .categories {
+    padding: 40px 0;
+  }
+  
+  .section-header {
+    margin-bottom: 30px;
+  }
+  
+  .section-header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .jobs-grid {
+    margin-top: 25px;
+  }
+  
+  .job-content {
     padding: 20px;
   }
   
+  .job-title {
+    font-size: 1.1rem;
+  }
+  
+  .job-company {
+    font-size: 0.95rem;
+  }
+  
+  .job-location,
+  .job-salary {
+    font-size: 13px;
+  }
+  
+  .job-description {
+    font-size: 13px;
+  }
+  
+  .job-requirements {
+    font-size: 12px;
+    padding: 10px;
+  }
+  
+  .categories-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  
   .category-card {
-    padding: 30px 15px;
+    padding: 25px 12px;
+  }
+  
+  .category-icon {
+    font-size: 2.2rem;
+  }
+  
+  .category-card h3 {
+    font-size: 1.1rem;
+  }
+  
+  .category-card p {
+    font-size: 13px;
+  }
+  
+  .cta-section {
+    padding: 50px 0;
+  }
+  
+  .cta-section h2 {
+    font-size: 1.8rem;
+  }
+  
+  .cta-section p {
+    font-size: 1rem;
+  }
+  
+  .cta-btn {
+    padding: 12px 30px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home {
+    padding-top: 65px;
+  }
+  
+  .hero {
+    padding: 50px 0 35px;
+  }
+  
+  .hero-content {
+    padding: 0 12px;
+  }
+  
+  .hero h1 {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+  
+  .hero p {
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+  }
+  
+  .hero-stats {
+    gap: 18px;
+    margin-top: 25px;
+  }
+  
+  .stat h3 {
+    font-size: 1.6rem;
+    margin-bottom: 5px;
+  }
+  
+  .stat p {
+    font-size: 0.9rem;
+  }
+  
+  .search-section {
+    padding: 30px 0;
+    margin-top: -25px;
+  }
+  
+  .search-container {
+    padding: 0 10px;
+  }
+  
+  .search-container h2 {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+  }
+  
+  .search-form {
+    padding: 10px;
+  }
+  
+  .search-input {
+    padding: 12px 14px;
+  }
+  
+  .search-btn {
+    padding: 12px 18px;
+    font-size: 14px;
+  }
+  
+  .featured-jobs,
+  .categories {
+    padding: 35px 0;
+  }
+  
+  .section-header {
+    margin-bottom: 25px;
+  }
+  
+  .section-header h2 {
+    font-size: 1.6rem;
+  }
+  
+  .section-header p {
+    font-size: 0.95rem;
+  }
+  
+  .jobs-grid {
+    margin-top: 20px;
+    gap: 15px;
+  }
+  
+  .job-content {
+    padding: 18px;
+  }
+  
+  .job-title {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+  
+  .job-company {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+  
+  .job-type {
+    padding: 4px 10px;
+    font-size: 10px;
+  }
+  
+  .job-location,
+  .job-salary {
+    font-size: 12px;
+  }
+  
+  .job-description {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .job-requirements {
+    font-size: 11px;
+    padding: 8px;
+    margin-bottom: 15px;
+  }
+  
+  .view-details-btn,
+  .apply-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+  
+  .no-featured-jobs {
+    padding: 40px 15px;
+  }
+  
+  .no-featured-jobs p {
+    font-size: 16px;
   }
   
   .categories-grid {
     grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .category-card {
+    padding: 20px 15px;
+  }
+  
+  .category-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+  
+  .category-card h3 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+  
+  .category-card p {
+    font-size: 12px;
+  }
+  
+  .cta-section {
+    padding: 40px 0;
+  }
+  
+  .cta-section h2 {
+    font-size: 1.6rem;
+    margin-bottom: 15px;
+  }
+  
+  .cta-section p {
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+  }
+  
+  .cta-btn {
+    padding: 12px 25px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .home {
+    padding-top: 60px;
+  }
+  
+  .hero {
+    padding: 40px 0 30px;
+  }
+  
+  .hero-content {
+    padding: 0 8px;
+  }
+  
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+  
+  .hero p {
+    font-size: 0.9rem;
+  }
+  
+  .search-container {
+    padding: 0 8px;
+  }
+  
+  .search-container h2 {
+    font-size: 1.3rem;
+  }
+  
+  .job-content {
+    padding: 15px;
+  }
+  
+  .category-card {
+    padding: 18px 12px;
+  }
+  
+  .cta-section h2 {
+    font-size: 1.4rem;
   }
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ProfileCandidate from './ProfileCandidate';
 import ProfileCompany from './ProfileCompany';
 import axios from 'axios';
+import { API_ENDPOINTS, handleApiError } from '../config/api';
 
 const ProfileRouter = ({ setCurrentView }) => {
   const [userType, setUserType] = useState('');
@@ -26,7 +27,7 @@ const ProfileRouter = ({ setCurrentView }) => {
       try {
         setLoading(true);
         // Obtener información del usuario desde el backend
-        const response = await axios.get(`http://localhost:5000/api/usuarios/${storedUserId}`);
+        const response = await axios.get(API_ENDPOINTS.getUser(storedUserId));
         
         if (response.data && response.data.rol) {
           // Mapear roles del backend a roles del frontend

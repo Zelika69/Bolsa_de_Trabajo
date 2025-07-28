@@ -12,6 +12,9 @@ import './components/Register.css';
 import './components/AdminPanel.css';
 import './components/JobForm.css';
 
+// Importar utilidades responsivas
+import './responsive-utilities.css';
+
 // Configuración de la aplicación
 const root = ReactDOM.createRoot(document.getElementById('root'));
 

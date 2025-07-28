@@ -545,19 +545,93 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
+  .job-listings {
+    padding: 30px 0;
+  }
+  
+  .listings-header {
+    margin-bottom: 30px;
+  }
+  
+  .listings-header h1 {
+    font-size: 2.5rem;
+  }
+  
   .jobs-grid {
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+  }
+  
+  .search-section,
+  .filters-section {
+    margin: 0 15px 20px;
   }
 }
 
 @media (max-width: 768px) {
-  .filters-container {
-    flex-direction: column;
-    gap: 15px;
+  .job-listings {
+    padding: 20px 0;
+    padding-top: 80px; /* Espacio para navbar */
   }
   
-  .filter-group {
+  .listings-header {
+    padding: 0 15px;
+    margin-bottom: 25px;
+  }
+  
+  .listings-header h1 {
+    font-size: 2.2rem;
+  }
+  
+  .listings-header p {
+    font-size: 1.1rem;
+  }
+  
+  .search-section {
+    margin: 0 10px 20px;
+    padding: 20px;
+  }
+  
+  .search-input-main {
+    padding: 14px 18px 14px 45px;
+    font-size: 15px;
+  }
+  
+  .filters-section {
+    margin: 0 10px 20px;
+    padding: 20px;
+  }
+  
+  .filter-category {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  
+  .filter-label {
     min-width: auto;
+    font-size: 13px;
+  }
+  
+  .filter-pills {
+    width: 100%;
+  }
+  
+  .filter-pill {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  
+  .results-section {
+    padding: 0 10px;
+  }
+  
+  .results-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
   }
   
   .jobs-grid {
@@ -565,17 +639,40 @@
     gap: 20px;
   }
   
+  .job-card {
+    padding: 20px;
+  }
+  
+  .job-title {
+    font-size: 1.2rem;
+  }
+  
   .job-details {
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
   
   .job-actions {
     flex-direction: column;
+    gap: 8px;
+  }
+  
+  .view-details-btn,
+  .apply-btn {
+    padding: 12px 16px;
+  }
+  
+  .job-modal {
+    margin: 15px;
+    max-height: 90vh;
   }
   
   .modal-header {
     padding: 20px;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.5rem;
   }
   
   .modal-content {
@@ -584,37 +681,160 @@
   
   .job-info {
     grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 15px;
   }
   
   .modal-actions {
     flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .job-listings {
+    padding-top: 70px;
+  }
+  
+  .listings-header h1 {
+    font-size: 2rem;
+  }
+  
+  .search-section,
+  .filters-section {
+    margin: 0 8px 15px;
+    padding: 15px;
+  }
+  
+  .search-input-main {
+    padding: 12px 16px 12px 40px;
+    font-size: 16px; /* Evita zoom en iOS */
+  }
+  
+  .filter-pill {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+  
+  .results-section {
+    padding: 0 8px;
+  }
+  
+  .job-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .job-title {
+    font-size: 1.1rem;
+  }
+  
+  .job-company {
+    font-size: 1rem;
+  }
+  
+  .job-modal {
+    margin: 10px;
+    border-radius: 15px;
   }
 }
 
 @media (max-width: 480px) {
   .job-listings {
-    padding: 20px 0;
+    padding: 15px 0;
+    padding-top: 65px;
   }
   
-  .listings-header h1 {
-    font-size: 2.2rem;
-  }
-  
-  .filters-section {
-    margin: 0 10px 30px;
-    padding: 20px 0;
-  }
-  
-  .results-section {
+  .listings-header {
     padding: 0 10px;
   }
   
+  .listings-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .listings-header p {
+    font-size: 1rem;
+  }
+  
+  .search-section,
+  .filters-section {
+    margin: 0 5px 15px;
+    padding: 12px;
+  }
+  
+  .search-input-main {
+    padding: 12px 14px 12px 38px;
+  }
+  
+  .search-icon {
+    left: 12px;
+    font-size: 16px;
+  }
+  
+  .filter-category {
+    margin-bottom: 15px;
+  }
+  
+  .filter-pill {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+  
+  .clear-all-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+  
+  .results-section {
+    padding: 0 5px;
+  }
+  
+  .results-count {
+    font-size: 1rem;
+  }
+  
   .job-card {
-    padding: 20px;
+    padding: 14px;
+  }
+  
+  .job-title {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+  
+  .job-company {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+  
+  .job-type-badge {
+    padding: 4px 10px;
+    font-size: 10px;
+  }
+  
+  .job-location,
+  .job-salary {
+    font-size: 12px;
+  }
+  
+  .job-description {
+    font-size: 13px;
+  }
+  
+  .job-requirements {
+    font-size: 12px;
+    padding: 10px;
+  }
+  
+  .view-details-btn,
+  .apply-btn {
+    padding: 10px 14px;
+    font-size: 13px;
   }
   
   .job-modal {
-    margin: 10px;
+    margin: 5px;
     max-height: 95vh;
   }
   
@@ -622,7 +842,74 @@
     padding: 15px;
   }
   
+  .modal-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .close-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 20px;
+  }
+  
   .modal-content {
     padding: 15px;
+  }
+  
+  .job-info {
+    padding: 12px;
+  }
+  
+  .info-item {
+    font-size: 13px;
+  }
+  
+  .job-full-description h3,
+  .job-full-requirements h3 {
+    font-size: 1.1rem;
+  }
+  
+  .job-full-description p,
+  .job-full-requirements p {
+    font-size: 14px;
+  }
+  
+  .apply-btn-large,
+  .save-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .job-listings {
+    padding-top: 60px;
+  }
+  
+  .listings-header h1 {
+    font-size: 1.6rem;
+  }
+  
+  .search-section,
+  .filters-section {
+    margin: 0 3px 12px;
+    padding: 10px;
+  }
+  
+  .job-card {
+    padding: 12px;
+  }
+  
+  .job-title {
+    font-size: 0.95rem;
+  }
+  
+  .job-modal {
+    margin: 3px;
+  }
+  
+  .modal-header,
+  .modal-content {
+    padding: 12px;
   }
 }

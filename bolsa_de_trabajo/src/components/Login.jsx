@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Login.css';
+import { API_ENDPOINTS, handleApiError } from '../config/api';
 
 // Función para encriptar contraseña (debe coincidir con Register.jsx)
 const encryptPassword = (password) => {
@@ -62,7 +63,7 @@ const Login = ({ onLogin, setCurrentView }) => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/login', {
+      const response = await fetch(API_ENDPOINTS.login, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +106,7 @@ const Login = ({ onLogin, setCurrentView }) => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/verify-2fa', {
+      const response = await fetch(API_ENDPOINTS.verifyTwoFA, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

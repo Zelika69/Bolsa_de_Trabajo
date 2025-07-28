@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './Profile.css';
 import axios from 'axios';
+import { API_ENDPOINTS, handleApiError } from '../config/api';
 
 const ProfileCandidate = ({ userId }) => {
   const [formData, setFormData] = useState({
@@ -31,7 +32,7 @@ const ProfileCandidate = ({ userId }) => {
         setLoading(true);
         setError('');
         
-        const response = await axios.get(`http://localhost:5000/api/candidato/profile/${userId}`);
+        const response = await axios.get(API_ENDPOINTS.getCandidateProfile(userId));
         
         if (response.data) {
           setFormData(prev => ({
@@ -51,7 +52,7 @@ const ProfileCandidate = ({ userId }) => {
           
           // Guardar la URL del CV si existe
           if (response.data.cv) {
-            setPdfUrl(`http://localhost:5000${response.data.cv}`);
+            setPdfUrl(API_ENDPOINTS.getStaticFile(response.data.cv));
           }
         }
       } catch (error) {
@@ -104,7 +105,7 @@ const ProfileCandidate = ({ userId }) => {
     try {
       // Primero actualizamos los datos del perfil
       const profileResponse = await axios.put(
-        `http://localhost:5000/api/candidato/profile/${userId}`,
+        API_ENDPOINTS.updateCandidateProfile(userId),
         {
           direccion: formData.direccion,
           educacion: formData.educacion,
@@ -118,7 +119,7 @@ const ProfileCandidate = ({ userId }) => {
         formDataFile.append('cv', formData.cv);
 
         await axios.post(
-          `http://localhost:5000/api/candidato/upload-cv/${userId}`,
+          API_ENDPOINTS.uploadCV(userId),
           formDataFile,
           {
             headers: {
@@ -161,9 +162,9 @@ const ProfileCandidate = ({ userId }) => {
           <div className="profile-photo-container">
             <img 
               src={userData.rutaImagen ? 
-                `http://127.0.0.1:5000/static/images/candidato/${userData.rutaImagen}` :
-                `http://127.0.0.1:5000/static/images/default/user_default.svg`
-              } 
+              API_ENDPOINTS.getUserImage('candidato', userData.rutaImagen) :
+              API_ENDPOINTS.getDefaultImage('user')
+            } 
               alt="Foto de perfil" 
               className="profile-photo"
             />

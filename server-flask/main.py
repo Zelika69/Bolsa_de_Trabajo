@@ -5,9 +5,21 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 import secrets
 import time
+import os
 
 app = Flask(__name__, static_folder='src/static')
-CORS(app)
+
+# Configuración de CORS mejorada para permitir conexiones desde múltiples dispositivos
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["*"],  # En desarrollo, permitir todos los orígenes
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    },
+    r"/static/*": {
+        "origins": ["*"]
+    }
+})
 
 @app.route('/api/usuarios', methods=['GET'])
 def obtener_usuarios():

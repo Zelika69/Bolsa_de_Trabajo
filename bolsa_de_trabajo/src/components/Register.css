@@ -250,27 +250,170 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
+  .register-container {
+    padding: 20px 15px;
+  }
+  
   .register-card {
-    padding: 30px 20px;
-    margin: 10px;
+    max-width: 650px;
+    padding: 35px;
+  }
+}
+
+@media (max-width: 768px) {
+  .register-container {
+    padding: 15px 10px;
+    min-height: 100vh;
+    align-items: flex-start;
+    padding-top: 80px; /* Espacio para navbar */
+  }
+  
+  .register-card {
+    padding: 30px 25px;
+    margin: 0 auto;
+    max-width: 500px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   }
   
   .form-row {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .register-header h2 {
+    font-size: 1.7rem;
+  }
+  
+  .register-header p {
+    font-size: 0.9rem;
+  }
+  
+  .form-group input,
+  .form-group select {
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+  
+  .register-button {
+    padding: 16px 30px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .register-container {
+    padding: 10px 8px;
+    padding-top: 70px;
+  }
+  
+  .register-card {
+    padding: 25px 20px;
+    margin: 0;
+    border-radius: 15px;
+    max-width: 100%;
   }
   
   .register-header h2 {
     font-size: 1.5rem;
   }
+  
+  .form-group input,
+  .form-group select {
+    padding: 14px 16px;
+    font-size: 16px; /* Evita zoom en iOS */
+    border-radius: 10px;
+  }
+  
+  .register-button {
+    padding: 16px;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+  
+  .checkbox-group {
+    margin: 12px 0;
+  }
+  
+  .checkbox-group label {
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 480px) {
   .register-container {
-    padding: 10px;
+    padding: 8px 5px;
+    padding-top: 65px;
   }
   
   .register-card {
     padding: 20px 15px;
+    border-radius: 12px;
+  }
+  
+  .register-header h2 {
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+  }
+  
+  .register-header p {
+    font-size: 0.85rem;
+  }
+  
+  .form-group {
+    margin-bottom: 18px;
+  }
+  
+  .form-group label {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  
+  .form-group input,
+  .form-group select {
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+  
+  .register-button {
+    padding: 14px;
+    font-size: 15px;
+  }
+  
+  .checkbox-group label {
+    font-size: 12px;
+  }
+  
+  .login-link p {
+    font-size: 13px;
+  }
+  
+  .login-link button {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .register-container {
+    padding: 5px;
+    padding-top: 60px;
+  }
+  
+  .register-card {
+    padding: 15px 12px;
+  }
+  
+  .register-header h2 {
+    font-size: 1.2rem;
+  }
+  
+  .form-group input,
+  .form-group select {
+    padding: 10px 12px;
+  }
+  
+  .register-button {
+    padding: 12px;
+    font-size: 14px;
   }
 }

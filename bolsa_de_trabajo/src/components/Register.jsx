@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Register.css';
 import axios from 'axios';
+import { API_ENDPOINTS, handleApiError } from '../config/api';
 
 // Función para encriptar contraseña (ejemplo básico)
 const encryptPassword = (password) => {
@@ -124,7 +125,7 @@ const Register = ({ setCurrentView }) => {
       };
       
       // Llamada a la API de registro
-      const response = await axios.post('http://localhost:5000/api/register', dataToSend);
+      const response = await axios.post(API_ENDPOINTS.register, dataToSend);
       
       if (response.status === 201) {
         // Guardar ID de usuario y tipo en localStorage para uso posterior

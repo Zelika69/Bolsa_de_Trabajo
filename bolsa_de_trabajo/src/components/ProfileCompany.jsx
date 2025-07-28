@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Profile.css';
+import { API_ENDPOINTS, handleApiError } from '../config/api';
 
 const ProfileCompany = ({ userId }) => {
   const [formData, setFormData] = useState({
@@ -29,7 +30,7 @@ const ProfileCompany = ({ userId }) => {
         setLoading(true);
         setError('');
         
-        const response = await axios.get(`http://localhost:5000/api/empresa/profile/${userId}`);
+        const response = await axios.get(API_ENDPOINTS.getCompanyProfile(userId));
         
         if (response.data) {
           setFormData(prev => ({
@@ -90,7 +91,7 @@ const ProfileCompany = ({ userId }) => {
     try {
       // Actualizar los datos del perfil
       await axios.put(
-        `http://localhost:5000/api/empresa/profile/${userId}`,
+        API_ENDPOINTS.updateCompanyProfile(userId),
         formData
       );
 
@@ -121,9 +122,9 @@ const ProfileCompany = ({ userId }) => {
           <div className="profile-photo-container">
             <img 
               src={userData.rutaImagen ? 
-                `http://127.0.0.1:5000/static/images/empresa/${userData.rutaImagen}` :
-                `http://127.0.0.1:5000/static/images/default/company_default.svg`
-              } 
+              API_ENDPOINTS.getUserImage('empresa', userData.rutaImagen) :
+              API_ENDPOINTS.getDefaultImage('recruiter')
+            } 
               alt="Logo de empresa" 
               className="profile-photo"
             />
