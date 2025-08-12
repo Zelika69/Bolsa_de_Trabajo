@@ -3,11 +3,8 @@ import './Register.css';
 import axios from 'axios';
 import { API_ENDPOINTS, handleApiError } from '../config/api';
 
-// Función para encriptar contraseña (ejemplo básico)
-const encryptPassword = (password) => {
-  // En un caso real, usaría una librería como bcryptjs o similar
-  return btoa(password); // Solo como ejemplo, NO usar en producción
-};
+
+
 
 const Register = ({ setCurrentView }) => {
   const [formData, setFormData] = useState({
@@ -112,16 +109,19 @@ const Register = ({ setCurrentView }) => {
     setIsLoading(true);
     
     try {
-      // Preparar datos para enviar al backend
-      const dataToSend = {
-        nombre: formData.firstName,
-        apellido: formData.lastName,
-        nombreUsuario: formData.nombreUsuario,
-        correo: formData.email,
-        contrasena: encryptPassword(formData.password),
-        userType: formData.userType,
-        telefono: formData.phone,
-        empresa: formData.company
+    // Preparar datos exactamente como los espera el backend
+    const dataToSend = {
+      nombreUsuario: formData.nombreUsuario,
+      correo: formData.email,
+            contrasena: formData.password,
+      userType: formData.userType,
+      // Campos para candidato
+      nombreCandidato: formData.firstName,
+      apellidoCandidato: formData.lastName,
+      telefonoCandidato: formData.phone,
+      // Campos para empresa
+      nombreEmpresa: formData.company,
+      telefonoEmpresa: formData.phone // Mismo teléfono para empresa
       };
       
       // Llamada a la API de registro

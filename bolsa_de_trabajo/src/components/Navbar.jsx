@@ -90,6 +90,17 @@ const Navbar = ({ currentView, setCurrentView, user, onLogout }) => {
               </button>
             </li>
             
+            {user && user.role === 'user' && (
+              <li className={`nav-item ${currentView === 'saved-jobs' ? 'active' : ''}`}>
+                <button 
+                  className="nav-link" 
+                  onClick={() => handleNavClick('saved-jobs')}
+                >
+                  Vacantes Guardadas
+                </button>
+              </li>
+            )}
+            
             {user && (user.role === 'admin' || user.role === 'recruiter') && (
               <li className={`nav-item ${currentView === 'add-job' ? 'active' : ''}`}>
                 <button 
@@ -108,6 +119,17 @@ const Navbar = ({ currentView, setCurrentView, user, onLogout }) => {
                   onClick={() => handleNavClick('admin')}
                 >
                   Administración
+                </button>
+              </li>
+            )}
+            
+            {user && user.role === 'recruiter' && (
+              <li className={`nav-item ${currentView === 'company-dashboard' ? 'active' : ''}`}>
+                <button 
+                  className="nav-link" 
+                  onClick={() => handleNavClick('company-dashboard')}
+                >
+                  Panel de Empresa
                 </button>
               </li>
             )}
@@ -203,6 +225,15 @@ const Navbar = ({ currentView, setCurrentView, user, onLogout }) => {
             💼 Vacantes
           </button>
           
+          {user && user.role === 'user' && (
+            <button 
+              className={`mobile-nav-link ${currentView === 'saved-jobs' ? 'active' : ''}`}
+              onClick={() => handleNavClick('saved-jobs')}
+            >
+              💾 Vacantes Guardadas
+            </button>
+          )}
+          
           {user && (user.role === 'admin' || user.role === 'recruiter') && (
             <button 
               className={`mobile-nav-link ${currentView === 'add-job' ? 'active' : ''}`}
@@ -218,6 +249,15 @@ const Navbar = ({ currentView, setCurrentView, user, onLogout }) => {
               onClick={() => handleNavClick('admin')}
             >
               ⚙️ Administración
+            </button>
+          )}
+          
+          {user && user.role === 'recruiter' && (
+            <button 
+              className={`mobile-nav-link ${currentView === 'company-dashboard' ? 'active' : ''}`}
+              onClick={() => handleNavClick('company-dashboard')}
+            >
+              🏢 Panel de Empresa
             </button>
           )}
           

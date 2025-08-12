@@ -1,8 +1,102 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { API_ENDPOINTS } from '../config/api';
 import './Home.css';
 
 const Home = ({ jobs }) => {
-  const featuredJobs = jobs.filter(job => job.featured).slice(0, 3); // Mostrar solo las vacantes marcadas como destacadas
+  const [featuredJobs, setFeaturedJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [savedJobs, setSavedJobs] = useState([]);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Cargar usuario desde localStorage
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+
+    // Cargar trabajos guardados desde localStorage
+    const saved = localStorage.getItem('savedJobs');
+    if (saved) {
+      setSavedJobs(JSON.parse(saved));
+    }
+
+    loadFeaturedJobs();
+  }, []);
+
+  const loadFeaturedJobs = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://127.0.0.1:5000/api/vacantes');
+      if (response.ok) {
+        const allJobs = await response.json();
+        // Filtrar solo las vacantes destacadas
+        const featured = allJobs.filter(job => job.destacada).slice(0, 3);
+        setFeaturedJobs(featured);
+      }
+    } catch (error) {
+      console.error('Error cargando vacantes destacadas:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleSaveJob = (job) => {
+    const jobId = job.id;
+    let updatedSavedJobs;
+    
+    if (savedJobs.includes(jobId)) {
+      updatedSavedJobs = savedJobs.filter(id => id !== jobId);
+    } else {
+      updatedSavedJobs = [...savedJobs, jobId];
+    }
+    
+    setSavedJobs(updatedSavedJobs);
+    localStorage.setItem('savedJobs', JSON.stringify(updatedSavedJobs));
+  };
+
+  const handleApplyJob = async (job) => {
+    if (!user) {
+      alert('Debes iniciar sesión para aplicar a esta vacante');
+      return;
+    }
+
+    // Verificar que el usuario sea un candidato registrado
+    if (user.role !== 'user') {
+      alert('Solo los candidatos registrados pueden aplicar a vacantes. Si eres una empresa, puedes publicar vacantes desde tu panel.');
+      return;
+    }
+
+    // Verificar si el usuario tiene todos los datos necesarios
+    if (!user.nombre || !user.correo) {
+      alert('Debes completar tu perfil antes de aplicar a vacantes. Ve a tu perfil para completar la información faltante.');
+      return;
+    }
+
+    try {
+      const response = await fetch(API_ENDPOINTS.createPostulacion, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          vacanteId: job.id
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`¡Postulación enviada exitosamente para: ${job.titulo || 'Sin título'}!`);
+      } else {
+        alert(data.error || 'Error al enviar la postulación');
+      }
+    } catch (error) {
+      console.error('Error al aplicar a la vacante:', error);
+      alert('Error de conexión. Inténtalo de nuevo.');
+    }
+  };
 
   return (
     <div className="home">
@@ -55,53 +149,70 @@ const Home = ({ jobs }) => {
             <h2>Empleos Disponibles</h2>
             <p>Descubre oportunidades que se ajusten a tu perfil profesional</p>
           </div>
-          <div className="jobs-grid">
-            {featuredJobs.map(job => (
-              <div key={job.id} className="job-card featured">
-                <div className="job-badge">
-                  <span className="featured-badge">Destacada</span>
-                </div>
-                <div className="job-content">
-                  <div className="job-header">
-                    <h3 className="job-title">{job.title}</h3>
-                    <div className="job-meta">
-                      <span className="job-company">{job.company}</span>
-                      <div className="job-details">
-                        <span className="job-location">📍 {job.location}</span>
-                        <span className="job-salary">💰 {job.salary}</span>
+          {loading ? (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>Cargando vacantes destacadas...</p>
+            </div>
+          ) : (
+            <div className="jobs-grid">
+              {featuredJobs.map(job => (
+                <div key={job.id} className="job-card featured">
+                  <div className="job-badge">
+                    <span className="featured-badge">Destacada</span>
+                    <button 
+                      className={`save-job-btn ${savedJobs.includes(job.id) ? 'saved' : ''}`}
+                      onClick={() => toggleSaveJob(job)}
+                      title={savedJobs.includes(job.id) ? 'Quitar de guardados' : 'Guardar vacante'}
+                    >
+                      {savedJobs.includes(job.id) ? '❤️' : '🤍'}
+                    </button>
+                  </div>
+                  <div className="job-content">
+                    <div className="job-header">
+                      <h3 className="job-title">{job.titulo}</h3>
+                      <div className="job-meta">
+                        <span className="job-company">{job.nombreEmpresa}</span>
+                        <div className="job-details">
+                          <span className="job-location">📍 {job.ubicacion}</span>
+                          <span className="job-salary">💰 ${job.salario ? job.salario.toLocaleString() : 'No especificado'}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="job-type-container">
-                    <span className={`job-type ${job.type.replace(' ', '-').toLowerCase()}`}>
-                      {job.type}
-                    </span>
-                    {job.remote && <span className="remote-badge">Remoto</span>}
-                    {job.hybrid && <span className="hybrid-badge">Híbrido</span>}
-                  </div>
-                  
-                  <div className="job-description">
-                    {job.description.length > 120 
-                      ? `${job.description.substring(0, 120)}...` 
-                      : job.description
-                    }
-                  </div>
-                  
-                  <div className="job-requirements">
-                    <strong>Requisitos:</strong> {job.requirements}
-                  </div>
-                  
-                  <div className="job-actions">
-                    <button className="view-details-btn">Ver Detalles</button>
-                    <button className="apply-btn">Aplicar Ahora</button>
+                    
+                    <div className="job-type-container">
+                      <span className={`job-type ${job.tipoContrato ? job.tipoContrato.replace(' ', '-').toLowerCase() : ''}`}>
+                        {job.tipoContrato || 'No especificado'}
+                      </span>
+                    </div>
+                    
+                    <div className="job-description">
+                      {job.descripcion && job.descripcion.length > 120 
+                        ? `${job.descripcion.substring(0, 120)}...` 
+                        : job.descripcion || 'Sin descripción disponible'
+                      }
+                    </div>
+                    
+                    <div className="job-requirements">
+                      <strong>Requisitos:</strong> {job.requisitos || 'No especificados'}
+                    </div>
+                    
+                    <div className="job-actions">
+                      <button className="view-details-btn">Ver Detalles</button>
+                      <button 
+                        className="apply-btn"
+                        onClick={() => handleApplyJob(job)}
+                      >
+                        Aplicar Ahora
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
             ))}
           </div>
+          )}
           
-          {featuredJobs.length === 0 && (
+          {!loading && featuredJobs.length === 0 && (
             <div className="no-featured-jobs">
               <p>No hay vacantes destacadas disponibles en este momento.</p>
             </div>

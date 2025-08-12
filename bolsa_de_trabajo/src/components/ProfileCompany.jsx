@@ -96,7 +96,12 @@ const ProfileCompany = ({ userId }) => {
       );
 
       setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      
+      // Mostrar mensaje de éxito y cerrar el formulario automáticamente
+      setTimeout(() => {
+        setSuccess(false);
+        setEditMode(false); // Cerrar el formulario de edición
+      }, 2000);
     } catch (error) {
       console.error('Error al actualizar perfil:', error);
       setError(

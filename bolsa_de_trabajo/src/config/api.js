@@ -42,9 +42,31 @@ export const API_ENDPOINTS = {
   getCompanyProfile: (userId) => `${API_BASE_URL}/api/empresa/profile/${userId}`,
   updateCompanyProfile: (userId) => `${API_BASE_URL}/api/empresa/profile/${userId}`,
   
+  // Vacantes
+  getAllVacantes: `${API_BASE_URL}/api/vacantes`,
+  getCompanyVacantes: (userId) => `${API_BASE_URL}/api/empresa/${userId}/vacantes`,
+  createVacante: (userId) => `${API_BASE_URL}/api/empresa/${userId}/vacantes`,
+  getVacante: (userId, vacanteId) => `${API_BASE_URL}/api/empresa/${userId}/vacantes/${vacanteId}`,
+  updateVacante: (userId, vacanteId) => `${API_BASE_URL}/api/empresa/${userId}/vacantes/${vacanteId}`,
+  
+  // Postulaciones
+  createPostulacion: `${API_BASE_URL}/api/postulaciones`,
+  deleteVacante: (userId, vacanteId) => `${API_BASE_URL}/api/empresa/${userId}/vacantes/${vacanteId}`,
+  
+  // Postulaciones
+  getCompanyApplications: (userId) => `${API_BASE_URL}/api/empresa/${userId}/postulaciones`,
+  updateApplicationStatus: (applicationId) => `${API_BASE_URL}/api/postulaciones/${applicationId}`,
+  
   // Archivos estáticos
   getStaticFile: (path) => `${API_BASE_URL}${path}`,
-  getUserImage: (userType, imageName) => `${API_BASE_URL}/static/images/${userType}/${imageName}`,
+  getUserImage: (userType, imageName) => {
+    // Si imageName ya contiene la ruta completa, usarla directamente
+    if (imageName.startsWith('static/images/') || imageName.startsWith('/static/images/')) {
+      return `${API_BASE_URL}/${imageName.startsWith('/') ? imageName.substring(1) : imageName}`;
+    }
+    // Si no, construir la ruta con userType
+    return `${API_BASE_URL}/static/images/${userType}/${imageName}`;
+  },
   getDefaultImage: (userRole) => {
     const imageMap = {
       admin: 'admin_default.svg',

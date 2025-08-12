@@ -3,6 +3,7 @@ import './App.css';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import JobListings from './components/JobListings';
+import SavedJobs from './components/SavedJobs';
 import Login from './components/Login';
 import Register from './components/Register';
 import AdminPanel from './components/AdminPanel';
@@ -10,25 +11,9 @@ import JobForm from './components/JobForm';
 import ProfileCandidate from './components/ProfileCandidate';
 import ProfileCompany from './components/ProfileCompany';
 import ProfileRouter from './components/ProfileRouter';
+import CompanyDashboard from './components/CompanyDashboard';
 
-// Datos iniciales podrían moverse a un archivo aparte
-const initialJobs = [
-  {
-    id: 1,
-    title: 'Desarrollador Frontend React',
-    company: 'TechCorp',
-    location: 'Ciudad de México',
-    salary: '$25,000 - $35,000',
-    description: 'Buscamos un desarrollador Frontend con experiencia en React y TypeScript. CSS y HTML avanzado.',
-    requirements: 'React, TypeScript, Tailwind CSS',
-    type: 'Tiempo Completo',
-    experience: '1-2 años',
-    remote: false,
-    hybrid: false,
-    featured: true
-  },
-  // ... otros trabajos
-];
+// Los datos de trabajos ahora se cargan dinámicamente desde la API
 
 function App() {
   const [currentView, setCurrentView] = useState('home');
@@ -52,13 +37,13 @@ function App() {
       }
     };
 
-    // Cargar trabajos (en un caso real sería una API call)
+    // Cargar trabajos desde localStorage (los datos reales vienen de la API en JobListings)
     const loadJobs = () => {
       setLoading(true);
-      // Simular carga de API
+      // Los trabajos ahora se manejan dinámicamente en cada componente
       setTimeout(() => {
         const savedJobs = localStorage.getItem('jobs');
-        setJobs(savedJobs ? JSON.parse(savedJobs) : initialJobs);
+        setJobs(savedJobs ? JSON.parse(savedJobs) : []);
         setLoading(false);
       }, 500);
     };
@@ -113,6 +98,10 @@ function App() {
         return <Home jobs={jobs} />;
       case 'jobs':
         return <JobListings jobs={jobs} />;
+      case 'saved-jobs':
+        return user?.role === 'user' ? 
+          <SavedJobs /> : 
+          <div className="access-denied">Acceso denegado. Solo los candidatos pueden ver vacantes guardadas.</div>;
       case 'login':
         return <Login onLogin={handleLogin} setCurrentView={setCurrentView} />;
       case 'register':
@@ -131,6 +120,10 @@ function App() {
         return user ? <ProfileCandidate user={user} /> : <div>Por favor inicie sesión</div>;
       case 'profileCompany':
         return user ? <ProfileCompany user={user} /> : <div>Por favor inicie sesión</div>;
+      case 'company-dashboard':
+        return user?.role === 'recruiter' ? 
+          <CompanyDashboard /> : 
+          <div className="access-denied">Acceso denegado</div>;
       default:
         return <Home jobs={jobs} />;
     }

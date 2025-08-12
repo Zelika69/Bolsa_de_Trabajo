@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import './Login.css';
 import { API_ENDPOINTS, handleApiError } from '../config/api';
 
-// Función para encriptar contraseña (debe coincidir con Register.jsx)
-const encryptPassword = (password) => {
-  return btoa(password); // Mismo método que en Register.jsx
-};
+
 
 const Login = ({ onLogin, setCurrentView }) => {
   const [formData, setFormData] = useState({
@@ -70,7 +67,7 @@ const Login = ({ onLogin, setCurrentView }) => {
         },
         body: JSON.stringify({
            usuario: formData.usuario,
-           contrasena: encryptPassword(formData.password)
+           contrasena: formData.password
          })
       });
       
