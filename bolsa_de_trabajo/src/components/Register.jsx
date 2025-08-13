@@ -25,9 +25,17 @@ const Register = ({ setCurrentView }) => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+    
+    let processedValue = value;
+    
+    // Validación especial para teléfono: solo permitir números, espacios, +, (, )
+    if (name === 'phone') {
+      processedValue = value.replace(/[^0-9+\s()-]/g, '');
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : processedValue
     }));
     
     // Limpiar error del campo cuando el usuario empiece a escribir
@@ -64,8 +72,10 @@ const Register = ({ setCurrentView }) => {
     
     if (!formData.email) {
       newErrors.email = 'El email es requerido';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'El email no es válido';
+    } else if (formData.email.length > 100) {
+      newErrors.email = 'El email no puede exceder 100 caracteres';
     }
     
     if (!formData.password) {
@@ -80,8 +90,12 @@ const Register = ({ setCurrentView }) => {
     
     if (!formData.phone.trim()) {
       newErrors.phone = 'El teléfono es requerido';
-    } else if (!/^[0-9+\s]+$/.test(formData.phone)) {
-      newErrors.phone = 'Teléfono no válido';
+    } else if (!/^[0-9+\s()-]+$/.test(formData.phone)) {
+      newErrors.phone = 'El teléfono solo puede contener números, espacios, +, ( y )';
+    } else if (formData.phone.replace(/[^0-9]/g, '').length < 10) {
+      newErrors.phone = 'El teléfono debe tener al menos 10 dígitos';
+    } else if (formData.phone.replace(/[^0-9]/g, '').length > 15) {
+      newErrors.phone = 'El teléfono no puede exceder 15 dígitos';
     }
     
     if (formData.userType === 'recruiter' && !formData.company.trim()) {
@@ -256,6 +270,8 @@ const Register = ({ setCurrentView }) => {
               onChange={handleInputChange}
               className={`form-input ${errors.email ? 'error' : ''}`}
               placeholder="tu@email.com"
+              maxLength="100"
+              required
             />
             {errors.email && <span className="error-text">{errors.email}</span>}
           </div>
@@ -270,6 +286,9 @@ const Register = ({ setCurrentView }) => {
               onChange={handleInputChange}
               className={`form-input ${errors.phone ? 'error' : ''}`}
               placeholder="+52 123 456 7890"
+              pattern="[0-9+\s()-]{10,20}"
+              maxLength="20"
+              required
             />
             {errors.phone && <span className="error-text">{errors.phone}</span>}
           </div>

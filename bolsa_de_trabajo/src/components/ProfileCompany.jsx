@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Profile.css';
+import './ProfileCandidate.css';
 import { API_ENDPOINTS, handleApiError } from '../config/api';
 
 const ProfileCompany = ({ userId }) => {
@@ -9,7 +10,18 @@ const ProfileCompany = ({ userId }) => {
     telefono: '',
     rfc: '',
     direccion: '',
-    descripcion: ''
+    descripcion: '',
+    // Campos estructurados para dirección
+    calle: '',
+    colonia: '',
+    ciudad: '',
+    estado: '',
+    codigoPostal: '',
+    // Campos adicionales para empresa
+    sector: '',
+    tamanoEmpresa: '',
+    sitioWeb: '',
+    anioFundacion: ''
   });
   const [userData, setUserData] = useState({
     nombreUsuario: '',
@@ -23,6 +35,26 @@ const ProfileCompany = ({ userId }) => {
   const [error, setError] = useState('');
   const [editMode, setEditMode] = useState(false);
 
+  // Función para parsear campos concatenados
+  const parseCompanyData = (data) => {
+    const parsedData = { ...data };
+    
+    // Parsear dirección
+    if (data.direccion) {
+      const direccionParts = data.direccion.split(', ');
+      if (direccionParts.length >= 4) {
+        parsedData.calle = direccionParts[0] || '';
+        parsedData.colonia = direccionParts[1] || '';
+        parsedData.ciudad = direccionParts[2] || '';
+        parsedData.estado = direccionParts[3] || '';
+        const cpMatch = data.direccion.match(/CP: (\d{5})/);
+        parsedData.codigoPostal = cpMatch ? cpMatch[1] : '';
+      }
+    }
+    
+    return parsedData;
+  };
+
   useEffect(() => {
     // Cargar datos del perfil si existen
     const fetchProfileData = async () => {
@@ -33,13 +65,27 @@ const ProfileCompany = ({ userId }) => {
         const response = await axios.get(API_ENDPOINTS.getCompanyProfile(userId));
         
         if (response.data) {
+          // Parsear los datos concatenados
+          const parsedData = parseCompanyData(response.data);
+          
           setFormData(prev => ({
             ...prev,
             nombre: response.data.nombre || '',
             telefono: response.data.telefono || '',
             rfc: response.data.rfc || '',
             direccion: response.data.direccion || '',
-            descripcion: response.data.descripcion || ''
+            descripcion: response.data.descripcion || '',
+            // Campos parseados
+            calle: parsedData.calle || '',
+            colonia: parsedData.colonia || '',
+            ciudad: parsedData.ciudad || '',
+            estado: parsedData.estado || '',
+            codigoPostal: parsedData.codigoPostal || '',
+            // Campos adicionales
+            sector: response.data.sector || '',
+            tamanoEmpresa: response.data.tamanoEmpresa || '',
+            sitioWeb: response.data.sitioWeb || '',
+            anioFundacion: response.data.anioFundacion || ''
           }));
           
           setUserData({
@@ -88,14 +134,88 @@ const ProfileCompany = ({ userId }) => {
     setError('');
     setSuccess(false);
 
+    // Validar campos requeridos
+    const requiredFields = {
+      nombre: 'Nombre de la empresa',
+      telefono: 'Teléfono',
+      rfc: 'RFC',
+      calle: 'Calle y Número',
+      colonia: 'Colonia/Barrio',
+      ciudad: 'Ciudad',
+      estado: 'Estado',
+      codigoPostal: 'Código Postal',
+      sector: 'Sector',
+      tamanoEmpresa: 'Tamaño de Empresa'
+    };
+
+    for (const [field, label] of Object.entries(requiredFields)) {
+      if (!formData[field] || formData[field].toString().trim() === '') {
+        setError(`El campo "${label}" es requerido.`);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Validar RFC (formato básico)
+    if (formData.rfc && !/^[A-Z&Ñ]{3,4}[0-9]{6}[A-Z0-9]{3}$/.test(formData.rfc.toUpperCase())) {
+      setError('El RFC debe tener un formato válido (ej: ABC123456XYZ).');
+      setLoading(false);
+      return;
+    }
+
+    // Validar código postal
+    if (formData.codigoPostal && !/^[0-9]{5}$/.test(formData.codigoPostal)) {
+      setError('El código postal debe tener exactamente 5 dígitos.');
+      setLoading(false);
+      return;
+    }
+
+    // Validar teléfono
+    if (formData.telefono && !/^[0-9]{10}$/.test(formData.telefono.replace(/[\s\-\(\)]/g, ''))) {
+      setError('El teléfono debe tener 10 dígitos.');
+      setLoading(false);
+      return;
+    }
+
+    // Validar sitio web si se proporciona
+    if (formData.sitioWeb && !/^https?:\/\/.+/.test(formData.sitioWeb)) {
+      setError('El sitio web debe comenzar con http:// o https://');
+      setLoading(false);
+      return;
+    }
+
+    // Validar año de fundación
+    const currentYear = new Date().getFullYear();
+    if (formData.anioFundacion && (formData.anioFundacion < 1800 || formData.anioFundacion > currentYear)) {
+      setError(`El año de fundación debe estar entre 1800 y ${currentYear}.`);
+      setLoading(false);
+      return;
+    }
+
     try {
+      // Concatenar campos para envío al backend
+      const dataToSend = {
+        ...formData,
+        // Concatenar dirección
+        direccion: `${formData.calle}, ${formData.colonia}, ${formData.ciudad}, ${formData.estado}, CP: ${formData.codigoPostal}`,
+        // Normalizar RFC
+        rfc: formData.rfc.toUpperCase()
+      };
+
       // Actualizar los datos del perfil
       await axios.put(
         API_ENDPOINTS.updateCompanyProfile(userId),
-        formData
+        dataToSend
       );
 
       setSuccess(true);
+      
+      // Actualizar los datos locales con los campos concatenados
+      setFormData(prev => ({
+        ...prev,
+        direccion: dataToSend.direccion,
+        rfc: dataToSend.rfc
+      }));
       
       // Mostrar mensaje de éxito y cerrar el formulario automáticamente
       setTimeout(() => {
@@ -192,69 +312,222 @@ const ProfileCompany = ({ userId }) => {
             </div>
             
             <form onSubmit={handleSubmit} className="profile-form">
-              <div className="form-group">
-                <label htmlFor="nombre">Nombre</label>
-                <input
-                  type="text"
-                  id="nombre"
-                  name="nombre"
-                  value={formData.nombre}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  placeholder="Nombre de la empresa"
-                />
+              {/* Información Básica */}
+              <div className="form-section">
+                <h4>Información Básica</h4>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="nombre">Nombre de la Empresa *:</label>
+                    <input
+                      type="text"
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      placeholder="Ej: TechCorp SA de CV"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="rfc">RFC *:</label>
+                    <input
+                      type="text"
+                      id="rfc"
+                      name="rfc"
+                      value={formData.rfc}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      placeholder="Ej: ABC123456XYZ"
+                      maxLength="13"
+                      style={{textTransform: 'uppercase'}}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="telefono">Teléfono *:</label>
+                    <input
+                      type="tel"
+                      id="telefono"
+                      name="telefono"
+                      value={formData.telefono}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      placeholder="Ej: 5512345678"
+                      pattern="[0-9]{10}"
+                      maxLength="10"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="sitioWeb">Sitio Web:</label>
+                    <input
+                      type="url"
+                      id="sitioWeb"
+                      name="sitioWeb"
+                      value={formData.sitioWeb}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      placeholder="Ej: https://www.empresa.com"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="telefono">Teléfono</label>
-                <input
-                  type="text"
-                  id="telefono"
-                  name="telefono"
-                  value={formData.telefono}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  placeholder="Teléfono de la empresa"
-                />
+              {/* Información de la Empresa */}
+              <div className="form-section">
+                <h4>Detalles de la Empresa</h4>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="sector">Sector *:</label>
+                    <select
+                      id="sector"
+                      name="sector"
+                      value={formData.sector}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      required
+                    >
+                      <option value="">Selecciona un sector</option>
+                      <option value="Tecnología">Tecnología</option>
+                      <option value="Salud">Salud</option>
+                      <option value="Educación">Educación</option>
+                      <option value="Finanzas">Finanzas</option>
+                      <option value="Manufactura">Manufactura</option>
+                      <option value="Comercio">Comercio</option>
+                      <option value="Servicios">Servicios</option>
+                      <option value="Construcción">Construcción</option>
+                      <option value="Turismo">Turismo</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="tamanoEmpresa">Tamaño de Empresa *:</label>
+                    <select
+                      id="tamanoEmpresa"
+                      name="tamanoEmpresa"
+                      value={formData.tamanoEmpresa}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      required
+                    >
+                      <option value="">Selecciona el tamaño</option>
+                      <option value="Micro (1-10 empleados)">Micro (1-10 empleados)</option>
+                      <option value="Pequeña (11-50 empleados)">Pequeña (11-50 empleados)</option>
+                      <option value="Mediana (51-250 empleados)">Mediana (51-250 empleados)</option>
+                      <option value="Grande (251+ empleados)">Grande (251+ empleados)</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="anioFundacion">Año de Fundación:</label>
+                    <input
+                      type="number"
+                      id="anioFundacion"
+                      name="anioFundacion"
+                      value={formData.anioFundacion}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      placeholder="Ej: 2010"
+                      min="1800"
+                      max={new Date().getFullYear()}
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="rfc">RFC</label>
-                <input
-                  type="text"
-                  id="rfc"
-                  name="rfc"
-                  value={formData.rfc}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  placeholder="RFC de la empresa"
-                />
+              {/* Dirección Estructurada */}
+              <div className="form-section">
+                <h4>Dirección</h4>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="calle">Calle y Número *:</label>
+                    <input
+                      type="text"
+                      id="calle"
+                      name="calle"
+                      value={formData.calle}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      placeholder="Ej: Av. Reforma 123"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="colonia">Colonia/Barrio *:</label>
+                    <input
+                      type="text"
+                      id="colonia"
+                      name="colonia"
+                      value={formData.colonia}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      placeholder="Ej: Centro Histórico"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="ciudad">Ciudad *:</label>
+                    <input
+                      type="text"
+                      id="ciudad"
+                      name="ciudad"
+                      value={formData.ciudad}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      placeholder="Ej: Ciudad de México"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="estado">Estado *:</label>
+                    <input
+                      type="text"
+                      id="estado"
+                      name="estado"
+                      value={formData.estado}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      placeholder="Ej: CDMX"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="codigoPostal">Código Postal *:</label>
+                    <input
+                      type="text"
+                      id="codigoPostal"
+                      name="codigoPostal"
+                      value={formData.codigoPostal}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      placeholder="Ej: 06000"
+                      pattern="[0-9]{5}"
+                      maxLength="5"
+                      required
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="direccion">Dirección</label>
-                <input
-                  type="text"
-                  id="direccion"
-                  name="direccion"
-                  value={formData.direccion}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  placeholder="Dirección de la empresa"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="descripcion">Descripción</label>
-                <textarea
-                  id="descripcion"
-                  name="descripcion"
-                  value={formData.descripcion}
-                  onChange={handleInputChange}
-                  className="form-textarea"
-                  placeholder="Describe tu empresa"
-                  rows="6"
-                />
+              {/* Descripción */}
+              <div className="form-section">
+                <h4>Descripción de la Empresa</h4>
+                <div className="form-group">
+                  <label htmlFor="descripcion">Descripción:</label>
+                  <textarea
+                    id="descripcion"
+                    name="descripcion"
+                    value={formData.descripcion}
+                    onChange={handleInputChange}
+                    className="form-textarea"
+                    placeholder="Describe tu empresa, sus valores, misión y lo que la hace única..."
+                    rows="6"
+                  />
+                </div>
               </div>
 
               <button 

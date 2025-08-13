@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './Profile.css';
+import './ProfileCandidate.css';
 import axios from 'axios';
 import { API_ENDPOINTS, handleApiError } from '../config/api';
 
@@ -27,6 +28,49 @@ const ProfileCandidate = ({ userId, updateUser }) => {
   // Estado para el visor de CV (ahora solo mostramos el enlace)
   const [pdfUrl, setPdfUrl] = useState('');
 
+  // Función para parsear campos concatenados
+  const parseProfileData = (data) => {
+    const parsedData = { ...data };
+    
+    // Parsear dirección
+    if (data.direccion) {
+      const direccionParts = data.direccion.split(', ');
+      if (direccionParts.length >= 4) {
+        parsedData.calle = direccionParts[0] || '';
+        parsedData.colonia = direccionParts[1] || '';
+        parsedData.ciudad = direccionParts[2] || '';
+        parsedData.estado = direccionParts[3] || '';
+        const cpMatch = data.direccion.match(/CP: (\d{5})/);
+        parsedData.codigoPostal = cpMatch ? cpMatch[1] : '';
+      }
+    }
+    
+    // Parsear educación
+    if (data.educacion) {
+      const educacionMatch = data.educacion.match(/^(.+?) en (.+?) - (.+?) \((\d{4})\)/);
+      if (educacionMatch) {
+        parsedData.nivelEducativo = educacionMatch[1] || '';
+        parsedData.carrera = educacionMatch[2] || '';
+        parsedData.institucion = educacionMatch[3] || '';
+        parsedData.anioGraduacion = educacionMatch[4] || '';
+      }
+    }
+    
+    // Parsear experiencia
+    if (data.experiencia) {
+      const experienciaMatch = data.experiencia.match(/^(.+?) en (.+?) - (.+?)(?:\s\((.+?)\))?(?:\. (.+))?$/);
+      if (experienciaMatch) {
+        parsedData.puestoActual = experienciaMatch[1] || '';
+        parsedData.empresaActual = experienciaMatch[2] || '';
+        parsedData.aniosExperiencia = experienciaMatch[3] || '';
+        parsedData.periodoTrabajo = experienciaMatch[4] || '';
+        parsedData.descripcionExperiencia = experienciaMatch[5] || '';
+      }
+    }
+    
+    return parsedData;
+  };
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -36,12 +80,30 @@ const ProfileCandidate = ({ userId, updateUser }) => {
         const response = await axios.get(API_ENDPOINTS.getCandidateProfile(userId));
         
         if (response.data) {
+          // Parsear los datos concatenados
+          const parsedData = parseProfileData(response.data);
+          
           setFormData(prev => ({
             ...prev,
             direccion: response.data.direccion || '',
             educacion: response.data.educacion || '',
             experiencia: response.data.experiencia || '',
-            cvFileName: response.data.cv_nombre || ''
+            cvFileName: response.data.cv_nombre || '',
+            // Campos parseados
+            calle: parsedData.calle || '',
+            colonia: parsedData.colonia || '',
+            ciudad: parsedData.ciudad || '',
+            estado: parsedData.estado || '',
+            codigoPostal: parsedData.codigoPostal || '',
+            nivelEducativo: parsedData.nivelEducativo || '',
+            carrera: parsedData.carrera || '',
+            institucion: parsedData.institucion || '',
+            anioGraduacion: parsedData.anioGraduacion || '',
+            puestoActual: parsedData.puestoActual || '',
+            empresaActual: parsedData.empresaActual || '',
+            aniosExperiencia: parsedData.aniosExperiencia || '',
+            periodoTrabajo: parsedData.periodoTrabajo || '',
+            descripcionExperiencia: parsedData.descripcionExperiencia || ''
           }));
           
           setUserData({
@@ -129,14 +191,61 @@ const ProfileCandidate = ({ userId, updateUser }) => {
     setSuccess(false);
 
     try {
-      // Actualizar perfil básico
+      // Validar campos requeridos
+      const requiredFields = {
+        calle: 'Calle y Número',
+        colonia: 'Colonia/Barrio',
+        ciudad: 'Ciudad',
+        estado: 'Estado',
+        codigoPostal: 'Código Postal',
+        nivelEducativo: 'Nivel Educativo',
+        carrera: 'Carrera/Especialidad',
+        institucion: 'Institución',
+        anioGraduacion: 'Año de Graduación',
+        puestoActual: 'Puesto Actual/Más Reciente',
+        empresaActual: 'Empresa Actual/Más Reciente',
+        aniosExperiencia: 'Años de Experiencia'
+      };
+
+      for (const [field, label] of Object.entries(requiredFields)) {
+        if (!formData[field] || formData[field].toString().trim() === '') {
+          setError(`El campo "${label}" es requerido.`);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Validar código postal
+      if (formData.codigoPostal && !/^[0-9]{5}$/.test(formData.codigoPostal)) {
+        setError('El código postal debe tener exactamente 5 dígitos.');
+        setLoading(false);
+        return;
+      }
+
+      // Validar año de graduación
+      const currentYear = new Date().getFullYear();
+      if (formData.anioGraduacion && (formData.anioGraduacion < 1950 || formData.anioGraduacion > currentYear + 5)) {
+        setError(`El año de graduación debe estar entre 1950 y ${currentYear + 5}.`);
+        setLoading(false);
+        return;
+      }
+
+      // Concatenar campos estructurados para envío al backend
       const profileData = {
-        direccion: formData.direccion,
-        educacion: formData.educacion,
-        experiencia: formData.experiencia
+        direccion: `${formData.calle}, ${formData.colonia}, ${formData.ciudad}, ${formData.estado}, CP: ${formData.codigoPostal}`,
+        educacion: `${formData.nivelEducativo} en ${formData.carrera} - ${formData.institucion} (${formData.anioGraduacion})`,
+        experiencia: `${formData.puestoActual} en ${formData.empresaActual} - ${formData.aniosExperiencia}${formData.periodoTrabajo ? ` (${formData.periodoTrabajo})` : ''}${formData.descripcionExperiencia ? `. ${formData.descripcionExperiencia}` : ''}`
       };
 
       await axios.put(API_ENDPOINTS.updateCandidateProfile(userId), profileData);
+
+      // Actualizar los datos locales con los campos concatenados
+      setFormData(prev => ({
+        ...prev,
+        direccion: profileData.direccion,
+        educacion: profileData.educacion,
+        experiencia: profileData.experiencia
+      }));
 
       // Subir CV si se seleccionó uno nuevo
       if (formData.cv) {
@@ -287,40 +396,214 @@ const ProfileCandidate = ({ userId, updateUser }) => {
               <div className="form-section">
                 <h3>Editar Información Personal</h3>
                 
-                <div className="form-group">
-                  <label htmlFor="direccion">Dirección:</label>
-                  <input
-                    type="text"
-                    id="direccion"
-                    name="direccion"
-                    value={formData.direccion}
-                    onChange={handleInputChange}
-                    placeholder="Ingresa tu dirección"
-                  />
+                {/* Sección de Dirección Estructurada */}
+                <div className="form-section">
+                  <h4>Dirección</h4>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="calle">Calle y Número *:</label>
+                      <input
+                        type="text"
+                        id="calle"
+                        name="calle"
+                        value={formData.calle || ''}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Av. Reforma 123"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="colonia">Colonia/Barrio *:</label>
+                      <input
+                        type="text"
+                        id="colonia"
+                        name="colonia"
+                        value={formData.colonia || ''}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Centro Histórico"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="ciudad">Ciudad *:</label>
+                      <input
+                        type="text"
+                        id="ciudad"
+                        name="ciudad"
+                        value={formData.ciudad || ''}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Ciudad de México"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="estado">Estado *:</label>
+                      <input
+                        type="text"
+                        id="estado"
+                        name="estado"
+                        value={formData.estado || ''}
+                        onChange={handleInputChange}
+                        placeholder="Ej: CDMX"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="codigoPostal">Código Postal *:</label>
+                      <input
+                        type="text"
+                        id="codigoPostal"
+                        name="codigoPostal"
+                        value={formData.codigoPostal || ''}
+                        onChange={handleInputChange}
+                        placeholder="Ej: 06000"
+                        pattern="[0-9]{5}"
+                        maxLength="5"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="educacion">Educación:</label>
-                  <textarea
-                    id="educacion"
-                    name="educacion"
-                    value={formData.educacion}
-                    onChange={handleInputChange}
-                    placeholder="Describe tu formación académica"
-                    rows="4"
-                  />
+                {/* Sección de Educación Estructurada */}
+                <div className="form-section">
+                  <h4>Educación</h4>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="nivelEducativo">Nivel Educativo *:</label>
+                      <select
+                        id="nivelEducativo"
+                        name="nivelEducativo"
+                        value={formData.nivelEducativo || ''}
+                        onChange={handleInputChange}
+                        required
+                      >
+                        <option value="">Selecciona un nivel</option>
+                        <option value="Secundaria">Secundaria</option>
+                        <option value="Preparatoria">Preparatoria/Bachillerato</option>
+                        <option value="Técnico">Técnico</option>
+                        <option value="Licenciatura">Licenciatura</option>
+                        <option value="Ingeniería">Ingeniería</option>
+                        <option value="Maestría">Maestría</option>
+                        <option value="Doctorado">Doctorado</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="carrera">Carrera/Especialidad *:</label>
+                      <input
+                        type="text"
+                        id="carrera"
+                        name="carrera"
+                        value={formData.carrera || ''}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Ingeniería en Sistemas"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="institucion">Institución *:</label>
+                      <input
+                        type="text"
+                        id="institucion"
+                        name="institucion"
+                        value={formData.institucion || ''}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Universidad Nacional Autónoma de México"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="anioGraduacion">Año de Graduación *:</label>
+                      <input
+                        type="number"
+                        id="anioGraduacion"
+                        name="anioGraduacion"
+                        value={formData.anioGraduacion || ''}
+                        onChange={handleInputChange}
+                        placeholder="Ej: 2023"
+                        min="1950"
+                        max={new Date().getFullYear() + 5}
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="experiencia">Experiencia Laboral:</label>
-                  <textarea
-                    id="experiencia"
-                    name="experiencia"
-                    value={formData.experiencia}
-                    onChange={handleInputChange}
-                    placeholder="Describe tu experiencia laboral"
-                    rows="4"
-                  />
+                {/* Sección de Experiencia Laboral Estructurada */}
+                <div className="form-section">
+                  <h4>Experiencia Laboral</h4>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="puestoActual">Puesto Actual/Más Reciente *:</label>
+                      <input
+                        type="text"
+                        id="puestoActual"
+                        name="puestoActual"
+                        value={formData.puestoActual || ''}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Desarrollador Frontend"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="empresaActual">Empresa Actual/Más Reciente *:</label>
+                      <input
+                        type="text"
+                        id="empresaActual"
+                        name="empresaActual"
+                        value={formData.empresaActual || ''}
+                        onChange={handleInputChange}
+                        placeholder="Ej: TechCorp SA de CV"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="aniosExperiencia">Años de Experiencia *:</label>
+                      <select
+                        id="aniosExperiencia"
+                        name="aniosExperiencia"
+                        value={formData.aniosExperiencia || ''}
+                        onChange={handleInputChange}
+                        required
+                      >
+                        <option value="">Selecciona experiencia</option>
+                        <option value="Sin experiencia">Sin experiencia</option>
+                        <option value="Menos de 1 año">Menos de 1 año</option>
+                        <option value="1-2 años">1-2 años</option>
+                        <option value="3-5 años">3-5 años</option>
+                        <option value="6-10 años">6-10 años</option>
+                        <option value="Más de 10 años">Más de 10 años</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="periodoTrabajo">Período de Trabajo:</label>
+                      <input
+                        type="text"
+                        id="periodoTrabajo"
+                        name="periodoTrabajo"
+                        value={formData.periodoTrabajo || ''}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Enero 2022 - Presente"
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="descripcionExperiencia">Descripción de Responsabilidades:</label>
+                    <textarea
+                      id="descripcionExperiencia"
+                      name="descripcionExperiencia"
+                      value={formData.descripcionExperiencia || ''}
+                      onChange={handleInputChange}
+                      placeholder="Describe tus principales responsabilidades y logros..."
+                      rows="4"
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
