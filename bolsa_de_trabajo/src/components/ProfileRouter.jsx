@@ -4,7 +4,7 @@ import ProfileCompany from './ProfileCompany';
 import axios from 'axios';
 import { API_ENDPOINTS, handleApiError } from '../config/api';
 
-const ProfileRouter = ({ setCurrentView }) => {
+const ProfileRouter = ({ setCurrentView, updateUser }) => {
   const [userType, setUserType] = useState('');
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -98,7 +98,7 @@ const ProfileRouter = ({ setCurrentView }) => {
   return (
     <div>
       {userType === 'user' ? (
-        <ProfileCandidate userId={userId} setCurrentView={setCurrentView} />
+        <ProfileCandidate userId={userId} setCurrentView={setCurrentView} updateUser={updateUser} />
       ) : userType === 'recruiter' ? (
         <ProfileCompany userId={userId} setCurrentView={setCurrentView} />
       ) : (

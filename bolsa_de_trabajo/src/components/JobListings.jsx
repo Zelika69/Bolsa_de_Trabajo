@@ -58,10 +58,48 @@ const JobListings = () => {
       return;
     }
 
-    // Verificar si el usuario tiene todos los datos necesarios
-    if (!user.nombre || !user.correo) {
-      alert('Debes completar tu perfil antes de aplicar a vacantes. Ve a tu perfil para completar la información faltante.');
-      return;
+
+
+    // Verificar perfil completo del candidato
+    try {
+      const profileResponse = await fetch(API_ENDPOINTS.getCandidateProfile(user.id));
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        
+        // Debug: Mostrar los datos del perfil en la consola
+        console.log('Datos del perfil del candidato (JobListings):', profileData);
+        
+        const missingFields = [];
+        
+        if (!profileData.telefono || profileData.telefono.trim() === '') {
+          missingFields.push('teléfono');
+          console.log('Campo faltante: teléfono -', profileData.telefono);
+        }
+        if (!profileData.direccion || profileData.direccion.trim() === '') {
+          missingFields.push('dirección');
+          console.log('Campo faltante: dirección -', profileData.direccion);
+        }
+        if (!profileData.cv || profileData.cv.trim() === '') {
+          missingFields.push('CV');
+          console.log('Campo faltante: CV -', profileData.cv);
+        }
+        if (!profileData.educacion || profileData.educacion.trim() === '') {
+          missingFields.push('educación');
+          console.log('Campo faltante: educación -', profileData.educacion);
+        }
+        if (!profileData.experiencia || profileData.experiencia.trim() === '') {
+          missingFields.push('experiencia laboral');
+          console.log('Campo faltante: experiencia -', profileData.experiencia);
+        }
+        
+        if (missingFields.length > 0) {
+          alert(`Debes completar tu perfil antes de aplicar a vacantes. Campos faltantes: ${missingFields.join(', ')}. Ve a tu perfil para completar la información.`);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error al verificar perfil:', error);
+      // Continuar con la aplicación si hay error en la verificación del perfil
     }
 
     try {

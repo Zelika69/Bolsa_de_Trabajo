@@ -12,6 +12,7 @@ import ProfileCandidate from './components/ProfileCandidate';
 import ProfileCompany from './components/ProfileCompany';
 import ProfileRouter from './components/ProfileRouter';
 import CompanyDashboard from './components/CompanyDashboard';
+import CandidateApplications from './components/CandidateApplications';
 
 // Los datos de trabajos ahora se cargan dinámicamente desde la API
 
@@ -88,6 +89,12 @@ function App() {
     setJobs([...jobs, jobWithId]);
   };
 
+  const updateUser = (updatedUserData) => {
+    const newUserData = { ...user, ...updatedUserData };
+    setUser(newUserData);
+    localStorage.setItem('user', JSON.stringify(newUserData));
+  };
+
   const renderCurrentView = () => {
     if (loading) {
       return <div className="loading-spinner">Cargando...</div>;
@@ -102,6 +109,10 @@ function App() {
         return user?.role === 'user' ? 
           <SavedJobs /> : 
           <div className="access-denied">Acceso denegado. Solo los candidatos pueden ver vacantes guardadas.</div>;
+      case 'my-applications':
+        return user?.role === 'user' ? 
+          <CandidateApplications user={user} /> : 
+          <div className="access-denied">Acceso denegado. Solo los candidatos pueden ver sus aplicaciones.</div>;
       case 'login':
         return <Login onLogin={handleLogin} setCurrentView={setCurrentView} />;
       case 'register':
@@ -115,7 +126,7 @@ function App() {
           <JobForm onSubmit={addJob} setCurrentView={setCurrentView} /> : 
           <div className="access-denied">Acceso denegado</div>;
       case 'profile':
-        return <ProfileRouter user={user} setCurrentView={setCurrentView} />;
+        return <ProfileRouter user={user} setCurrentView={setCurrentView} updateUser={updateUser} />;
       case 'profileCandidate':
         return user ? <ProfileCandidate user={user} /> : <div>Por favor inicie sesión</div>;
       case 'profileCompany':

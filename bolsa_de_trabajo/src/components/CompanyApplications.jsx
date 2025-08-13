@@ -240,7 +240,7 @@ const CompanyApplications = ({ companyId }) => {
                     <div className="profile-section">
                       <h4>Currículum Vitae</h4>
                       <a 
-                        href={`http://localhost:5000${selectedApplication.candidato.cv}`}
+                        href={`http://localhost:5000/${selectedApplication.candidato.cv}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="cv-link"

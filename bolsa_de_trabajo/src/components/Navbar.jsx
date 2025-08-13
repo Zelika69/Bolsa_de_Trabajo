@@ -101,16 +101,18 @@ const Navbar = ({ currentView, setCurrentView, user, onLogout }) => {
               </li>
             )}
             
-            {user && (user.role === 'admin' || user.role === 'recruiter') && (
-              <li className={`nav-item ${currentView === 'add-job' ? 'active' : ''}`}>
+            {user && user.role === 'user' && (
+              <li className={`nav-item ${currentView === 'my-applications' ? 'active' : ''}`}>
                 <button 
                   className="nav-link" 
-                  onClick={() => handleNavClick('add-job')}
+                  onClick={() => handleNavClick('my-applications')}
                 >
-                  Publicar Vacante
+                  Mis Aplicaciones
                 </button>
               </li>
             )}
+            
+
             
             {user && user.role === 'admin' && (
               <li className={`nav-item ${currentView === 'admin' ? 'active' : ''}`}>
@@ -164,7 +166,7 @@ const Navbar = ({ currentView, setCurrentView, user, onLogout }) => {
                    alt="Foto de perfil" 
                    className="user-photo"
                   />
-                <span className="user-welcome">Hola, {user.name}</span>
+                <span className="user-welcome">Hola, {user.nombre || user.nombreUsuario || 'Usuario'}</span>
                 <span className="user-role">
                   {user.role === 'admin' ? 'ADMINISTRADOR' : 
                    user.role === 'recruiter' ? 'EMPRESA' : 
@@ -200,7 +202,7 @@ const Navbar = ({ currentView, setCurrentView, user, onLogout }) => {
               className="mobile-user-photo"
             />
             <div className="mobile-user-details">
-              <h4>Hola, {user.name}</h4>
+              <h4>Hola, {user.nombre || user.nombreUsuario || 'Usuario'}</h4>
               <p>
                 {user.role === 'admin' ? 'ADMINISTRADOR' : 
                  user.role === 'recruiter' ? 'EMPRESA' : 
@@ -234,14 +236,16 @@ const Navbar = ({ currentView, setCurrentView, user, onLogout }) => {
             </button>
           )}
           
-          {user && (user.role === 'admin' || user.role === 'recruiter') && (
+          {user && user.role === 'user' && (
             <button 
-              className={`mobile-nav-link ${currentView === 'add-job' ? 'active' : ''}`}
-              onClick={() => handleNavClick('add-job')}
+              className={`mobile-nav-link ${currentView === 'my-applications' ? 'active' : ''}`}
+              onClick={() => handleNavClick('my-applications')}
             >
-              ➕ Publicar Vacante
+              📋 Mis Aplicaciones
             </button>
           )}
+          
+
           
           {user && user.role === 'admin' && (
             <button 

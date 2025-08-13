@@ -113,3 +113,250 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Estilos para las tablas del admin panel */
+.admin-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.admin-panel th,
+.admin-panel td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-panel th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.admin-panel tr:hover {
+  background: #f8f9fa;
+}
+
+.admin-panel .action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-panel .action-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.admin-panel .edit-btn {
+  background: #007bff;
+  color: white;
+}
+
+.admin-panel .edit-btn:hover {
+  background: #0056b3;
+}
+
+.admin-panel .delete-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.admin-panel .delete-btn:hover {
+  background: #c82333;
+}
+
+.admin-panel .status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-panel .status.activo {
+  background: #d4edda;
+  color: #155724;
+}
+
+.admin-panel .status.inactivo {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Estilos mejorados para la tabla de candidatos */
+.candidatos-table-container {
+  margin: 20px 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.data-table th {
+  padding: 16px 12px;
+  font-weight: 600;
+  text-align: left;
+  border: none;
+  white-space: nowrap;
+}
+
+.data-table .col-id { width: 60px; }
+.data-table .col-usuario { width: 120px; }
+.data-table .col-email { width: 180px; }
+.data-table .col-telefono { width: 120px; }
+.data-table .col-direccion { width: 150px; }
+.data-table .col-educacion { width: 200px; }
+.data-table .col-experiencia { width: 200px; }
+.data-table .col-cv { width: 100px; }
+.data-table .col-estado { width: 100px; }
+.data-table .col-acciones { width: 120px; }
+
+.data-table tbody tr {
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table tbody tr:hover {
+  background: #f8f9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.data-table td {
+  padding: 14px 12px;
+  vertical-align: middle;
+  border: none;
+}
+
+.data-table .cell-id {
+  font-weight: 600;
+  color: #666;
+  text-align: center;
+}
+
+.data-table .user-info .username {
+  font-weight: 600;
+  color: #333;
+}
+
+.data-table .email-text {
+  color: #0066cc;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.data-table .direccion-text,
+.data-table .educacion-text,
+.data-table .experiencia-text {
+  display: block;
+  line-height: 1.4;
+  color: #555;
+  font-size: 13px;
+}
+
+.data-table .cv-status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.data-table .cv-status.disponible {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.data-table .cv-status.sin-cv {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.data-table .status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.data-table .status-badge.activo {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.data-table .status-badge.eliminado {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.data-table .loading-cell,
+.data-table .no-data-cell {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
+}
+
+.data-table .action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.data-table .action-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  min-width: 40px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.data-table .edit-btn {
+  background: #4CAF50;
+  color: white;
+}
+
+.data-table .edit-btn:hover {
+  background: #45a049;
+  transform: scale(1.05);
+}
+
+.data-table .delete-btn {
+  background: #f44336;
+  color: white;
+}
+
+.data-table .delete-btn:hover {
+  background: #da190b;
+  transform: scale(1.05);
+}

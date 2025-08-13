@@ -4,13 +4,14 @@ import './Profile.css';
 import axios from 'axios';
 import { API_ENDPOINTS, handleApiError } from '../config/api';
 
-const ProfileCandidate = ({ userId }) => {
+const ProfileCandidate = ({ userId, updateUser }) => {
   const [formData, setFormData] = useState({
     direccion: '',
     educacion: '',
     experiencia: '',
     cv: null,
-    cvFileName: ''
+    cvFileName: '',
+    profileImage: null
   });
   const [userData, setUserData] = useState({
     nombreUsuario: '',
@@ -44,7 +45,7 @@ const ProfileCandidate = ({ userId }) => {
           }));
           
           setUserData({
-            nombreUsuario: response.data.nombreUsuario || '',
+            nombreUsuario: response.data.nombreUsuario || 'Usuario',
             correo: response.data.correo || '',
             telefono: response.data.telefono || '',
             rutaImagen: response.data.rutaImagen || ''
@@ -96,6 +97,31 @@ const ProfileCandidate = ({ userId }) => {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validar tipo de archivo
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        setError('Solo se permiten archivos JPG, JPEG, PNG o GIF');
+        return;
+      }
+      
+      // Validar tamaño (máximo 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB en bytes
+      if (file.size > maxSize) {
+        setError('El archivo es demasiado grande. Máximo 5MB permitido.');
+        return;
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        profileImage: file
+      }));
+      setError(''); // Limpiar errores previos
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -103,30 +129,53 @@ const ProfileCandidate = ({ userId }) => {
     setSuccess(false);
 
     try {
-      // Primero actualizamos los datos del perfil
-      const profileResponse = await axios.put(
-        API_ENDPOINTS.updateCandidateProfile(userId),
-        {
-          direccion: formData.direccion,
-          educacion: formData.educacion,
-          experiencia: formData.experiencia
-        }
-      );
+      // Actualizar perfil básico
+      const profileData = {
+        direccion: formData.direccion,
+        educacion: formData.educacion,
+        experiencia: formData.experiencia
+      };
 
-      // Si hay un archivo CV para subir
+      await axios.put(API_ENDPOINTS.updateCandidateProfile(userId), profileData);
+
+      // Subir CV si se seleccionó uno nuevo
       if (formData.cv) {
-        const formDataFile = new FormData();
-        formDataFile.append('cv', formData.cv);
-
-        await axios.post(
-          API_ENDPOINTS.uploadCV(userId),
-          formDataFile,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
+        const cvFormData = new FormData();
+        cvFormData.append('cv', formData.cv);
+        
+        await axios.post(API_ENDPOINTS.uploadCV(userId), cvFormData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
           }
-        );
+        });
+        
+        // Actualizar la URL del PDF después de subir
+        setPdfUrl(API_ENDPOINTS.getStaticFile(`candidato/${formData.cvFileName}`));
+      }
+
+      // Subir imagen de perfil si se seleccionó una nueva
+      if (formData.profileImage) {
+        const imageFormData = new FormData();
+        imageFormData.append('image', formData.profileImage);
+        
+        const imageResponse = await axios.post(API_ENDPOINTS.uploadProfileImage(userId), imageFormData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        // Actualizar la imagen en el estado local
+        if (imageResponse.data && imageResponse.data.filename) {
+          setUserData(prev => ({
+            ...prev,
+            rutaImagen: imageResponse.data.filename
+          }));
+          
+          // Actualizar el estado global del usuario si updateUser está disponible
+          if (updateUser) {
+            updateUser({ rutaImagen: imageResponse.data.filename });
+          }
+        }
       }
 
       setSuccess(true);
@@ -175,7 +224,7 @@ const ProfileCandidate = ({ userId }) => {
             />
           </div>
           <div className="user-info-header">
-            <h2 className="profile-name">{userData.nombreUsuario}</h2>
+            <h2 className="profile-name">{userData.nombreUsuario || 'Usuario'}</h2>
             <p className="profile-email">{userData.correo}</p>
             <p className="profile-phone">{userData.telefono || 'Sin teléfono'}</p>
           </div>
@@ -199,125 +248,124 @@ const ProfileCandidate = ({ userId }) => {
             <div className="dashboard-section">
               <div className="section-header">
                 <h3>Educación</h3>
-                <button onClick={toggleEditMode} className="edit-btn">Editar</button>
               </div>
               <div className="info-card">
-                <div className="info-content">
-                  {formData.educacion ? (
-                    <p className="info-text">{formData.educacion}</p>
-                  ) : (
-                    <p className="info-placeholder">No has añadido información sobre tu educación</p>
-                  )}
-                </div>
+                <p className="education-text">{formData.educacion || 'No especificada'}</p>
               </div>
             </div>
 
             <div className="dashboard-section">
               <div className="section-header">
                 <h3>Experiencia Laboral</h3>
-                <button onClick={toggleEditMode} className="edit-btn">Editar</button>
               </div>
               <div className="info-card">
-                <div className="info-content">
-                  {formData.experiencia ? (
-                    <p className="info-text">{formData.experiencia}</p>
-                  ) : (
-                    <p className="info-placeholder">No has añadido información sobre tu experiencia laboral</p>
-                  )}
-                </div>
+                <p className="experience-text">{formData.experiencia || 'No especificada'}</p>
               </div>
             </div>
 
             <div className="dashboard-section">
               <div className="section-header">
-                <h3>Curriculum Vitae</h3>
-                <button onClick={toggleEditMode} className="edit-btn">Editar</button>
+                <h3>Currículum Vitae</h3>
               </div>
               <div className="info-card">
-                <div className="info-item">
-                  {formData.cvFileName ? (
-                    <div className="cv-info">
-                      <span className="info-value">{formData.cvFileName}</span>
-                      <button onClick={handleDownloadCV} className="view-btn">Descargar CV</button>
-                    </div>
-                  ) : (
-                    <span className="info-placeholder">No has subido tu CV</span>
-                  )}
-                </div>
+                {formData.cvFileName ? (
+                  <div className="cv-info">
+                    <span className="cv-filename">{formData.cvFileName}</span>
+                    <button onClick={handleDownloadCV} className="download-btn">
+                      Ver CV
+                    </button>
+                  </div>
+                ) : (
+                  <p>No hay CV subido</p>
+                )}
               </div>
             </div>
           </div>
         ) : (
-          <div className="dashboard-content">
-            <div className="section-header edit-mode-header">
-              <h3>Editar Perfil</h3>
-              <button onClick={toggleEditMode} className="cancel-btn">Cancelar</button>
-            </div>
-            
+          <div className="edit-form-container">
             <form onSubmit={handleSubmit} className="profile-form">
-              <div className="form-group">
-                <label htmlFor="direccion">Dirección</label>
-                <input
-                  type="text"
-                  id="direccion"
-                  name="direccion"
-                  value={formData.direccion}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  placeholder="Tu dirección completa"
-                />
-              </div>
+              <div className="form-section">
+                <h3>Editar Información Personal</h3>
+                
+                <div className="form-group">
+                  <label htmlFor="direccion">Dirección:</label>
+                  <input
+                    type="text"
+                    id="direccion"
+                    name="direccion"
+                    value={formData.direccion}
+                    onChange={handleInputChange}
+                    placeholder="Ingresa tu dirección"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="educacion">Educación</label>
-                <textarea
-                  id="educacion"
-                  name="educacion"
-                  value={formData.educacion}
-                  onChange={handleInputChange}
-                  className="form-textarea"
-                  placeholder="Describe tu formación académica"
-                  rows="4"
-                />
-              </div>
+                <div className="form-group">
+                  <label htmlFor="educacion">Educación:</label>
+                  <textarea
+                    id="educacion"
+                    name="educacion"
+                    value={formData.educacion}
+                    onChange={handleInputChange}
+                    placeholder="Describe tu formación académica"
+                    rows="4"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="experiencia">Experiencia Laboral</label>
-                <textarea
-                  id="experiencia"
-                  name="experiencia"
-                  value={formData.experiencia}
-                  onChange={handleInputChange}
-                  className="form-textarea"
-                  placeholder="Describe tu experiencia laboral"
-                  rows="6"
-                />
-              </div>
+                <div className="form-group">
+                  <label htmlFor="experiencia">Experiencia Laboral:</label>
+                  <textarea
+                    id="experiencia"
+                    name="experiencia"
+                    value={formData.experiencia}
+                    onChange={handleInputChange}
+                    placeholder="Describe tu experiencia laboral"
+                    rows="4"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="cv">Curriculum Vitae (PDF)</label>
-                <div className="file-input-container">
+                <div className="form-group">
+                  <label htmlFor="cv">Subir CV (PDF):</label>
                   <input
                     type="file"
                     id="cv"
-                    name="cv"
-                    onChange={handleFileChange}
-                    className="file-input"
                     accept=".pdf"
+                    onChange={handleFileChange}
                   />
-                  <div className="file-input-label">
-                    {formData.cvFileName ? formData.cvFileName : 'Seleccionar archivo'}
-                  </div>
+                  {formData.cvFileName && (
+                    <span className="file-name">Archivo actual: {formData.cvFileName}</span>
+                  )}
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="profileImage">Imagen de Perfil:</label>
+                  <input
+                    type="file"
+                    id="profileImage"
+                    accept=".jpg,.jpeg,.png,.gif"
+                    onChange={handleImageChange}
+                  />
+                  {formData.profileImage && (
+                    <div className="image-preview">
+                      <span className="file-name">Archivo seleccionado: {formData.profileImage.name}</span>
+                      <img 
+                        src={URL.createObjectURL(formData.profileImage)} 
+                        alt="Vista previa" 
+                        className="preview-image"
+                        style={{ maxWidth: '200px', maxHeight: '200px', marginTop: '10px' }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <button 
-                type="submit" 
-                className={`profile-btn ${loading ? 'loading' : ''}`}
-                disabled={loading}
-              >
-                {loading ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
+              <div className="form-actions">
+                <button type="submit" disabled={loading} className="save-btn">
+                  {loading ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+                <button type="button" onClick={toggleEditMode} className="cancel-btn">
+                  Cancelar
+                </button>
+              </div>
             </form>
           </div>
         )}

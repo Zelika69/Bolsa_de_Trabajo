@@ -37,6 +37,10 @@ export const API_ENDPOINTS = {
   getCandidateProfile: (userId) => `${API_BASE_URL}/api/candidato/profile/${userId}`,
   updateCandidateProfile: (userId) => `${API_BASE_URL}/api/candidato/profile/${userId}`,
   uploadCV: (userId) => `${API_BASE_URL}/api/candidato/upload-cv/${userId}`,
+  getCandidateApplications: (userId) => `${API_BASE_URL}/api/candidato/${userId}/postulaciones`,
+  
+  // Imágenes de perfil
+  uploadProfileImage: (userId) => `${API_BASE_URL}/api/usuario/upload-image/${userId}`,
   
   // Empresas
   getCompanyProfile: (userId) => `${API_BASE_URL}/api/empresa/profile/${userId}`,
@@ -57,8 +61,41 @@ export const API_ENDPOINTS = {
   getCompanyApplications: (userId) => `${API_BASE_URL}/api/empresa/${userId}/postulaciones`,
   updateApplicationStatus: (applicationId) => `${API_BASE_URL}/api/postulaciones/${applicationId}`,
   
+  // Endpoints de Administración
+  admin: {
+    // Usuarios
+    getUsers: `${API_BASE_URL}/api/admin/usuarios`,
+    createUser: `${API_BASE_URL}/api/admin/usuarios`,
+    updateUser: (userId) => `${API_BASE_URL}/api/admin/usuarios/${userId}`,
+    deleteUser: (userId) => `${API_BASE_URL}/api/admin/usuarios/${userId}`,
+    
+    // Vacantes
+    getVacantes: `${API_BASE_URL}/api/admin/vacantes`,
+    createVacante: `${API_BASE_URL}/api/admin/vacantes`,
+    updateVacante: (vacanteId) => `${API_BASE_URL}/api/admin/vacantes/${vacanteId}`,
+    deleteVacante: (vacanteId) => `${API_BASE_URL}/api/admin/vacantes/${vacanteId}`,
+    
+    // Empresas
+    getEmpresas: `${API_BASE_URL}/api/admin/empresas`,
+    updateEmpresa: (empresaId) => `${API_BASE_URL}/api/admin/empresas/${empresaId}`,
+    deleteEmpresa: (empresaId) => `${API_BASE_URL}/api/admin/empresas/${empresaId}`,
+    
+    // Candidatos
+    getCandidatos: `${API_BASE_URL}/api/admin/candidatos`,
+    updateCandidato: (candidatoId) => `${API_BASE_URL}/api/admin/candidatos/${candidatoId}`,
+    deleteCandidato: (candidatoId) => `${API_BASE_URL}/api/admin/candidatos/${candidatoId}`,
+    
+    // Postulaciones
+    getPostulaciones: `${API_BASE_URL}/api/admin/postulaciones`,
+    updatePostulacion: (postulacionId) => `${API_BASE_URL}/api/admin/postulaciones/${postulacionId}`,
+    deletePostulacion: (postulacionId) => `${API_BASE_URL}/api/admin/postulaciones/${postulacionId}`,
+    
+    // Estadísticas
+    getEstadisticas: `${API_BASE_URL}/api/admin/estadisticas`
+  },
+  
   // Archivos estáticos
-  getStaticFile: (path) => `${API_BASE_URL}${path}`,
+  getStaticFile: (path) => `${API_BASE_URL}/${path.startsWith('/') ? path.substring(1) : path}`,
   getUserImage: (userType, imageName) => {
     // Si imageName ya contiene la ruta completa, usarla directamente
     if (imageName.startsWith('static/images/') || imageName.startsWith('/static/images/')) {
